@@ -37,7 +37,7 @@ export function AfronatedLogo({ className = "", style }: LogoProps) {
 
   return (
     <img
-      src="/logo.png"
+      src="/logo-transparent.png"
       alt="Afronated"
       className={className}
       style={imgStyle}

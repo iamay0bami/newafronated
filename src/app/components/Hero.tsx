@@ -47,7 +47,7 @@ export function Hero() {
               We apply the invert+screen treatment directly.
             */}
             <img
-              src="/logo.png"
+              src="/logo-transparent.png"
               alt="Afronated"
               className="h-24 md:h-32 lg:h-40 xl:h-48 w-auto"
               style={{ filter: "invert(1)", mixBlendMode: "screen" }}
