@@ -52,7 +52,7 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
       onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}
     >
       <img
-        src={`https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+        src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
         alt={video.title}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
       />
