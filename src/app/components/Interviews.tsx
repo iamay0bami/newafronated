@@ -133,7 +133,7 @@ export function Interviews() {
           viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }}
           className="text-center mt-16"
         >
-          
+          <a
             href="https://www.youtube.com/@Afronated"
             target="_blank"
             rel="noopener noreferrer"
