@@ -28,7 +28,7 @@ export function Submit() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await sendViaEmailJS({ to_email: "afronated@gmail.com", from_name: formData.name, from_email: formData.email, reply_to: formData.email, intention: formData.intention, social: formData.socialHandle, message: formData.message, subject: `Submit inquiry from ${formData.name}` });
+      await sendViaEmailJS({ to_email: "ayobamiagboola2004@gmail.com", from_name: formData.name, from_email: formData.email, reply_to: formData.email, intention: formData.intention, social: formData.socialHandle, message: formData.message, subject: `Submit inquiry from ${formData.name}` });
       setFormData({ name: "", email: "", intention: "", socialHandle: "", message: "" });
       setStatus("success");
     } catch { setStatus("error"); }
