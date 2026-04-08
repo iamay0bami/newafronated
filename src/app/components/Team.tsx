@@ -43,7 +43,7 @@ const teamMembers: TeamMember[] = [
   {
     name: "Grace Otolorin",
     role: "Head of Operations & Co-founder",
-    bio: "A Creative Director and Project Manager dedicated to building structure and driving execution. Grace excels at bringing ideas to life through strategic planning and impactful storytelling.",
+    bio: "A strategic Creative Director and Project Manager focused on building structure and transforming ideas into structured execution.",
     frontImage: "/grace-front.png",
     backImage: "/grace-back.png",
     linkedin: "https://linkedin.com",
@@ -53,7 +53,7 @@ const teamMembers: TeamMember[] = [
   {
     name: "Veronica Emmanuel",
     role: "Content Writer",
-    bio: "A dedicated Content Writer specialising in clear brand communication and online growth. Veronica crafts engaging content for social media and blogs, focusing on simple, effective messaging.",
+    bio: "Dedicated Content Writer crafting simple, engaging messaging for clear brand communication and social media growth.",
     frontImage: "/veronica-front.png",
     backImage: "/veronica-back.png",
     linkedin: "https://linkedin.com",
