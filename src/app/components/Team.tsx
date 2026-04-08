@@ -12,7 +12,6 @@ function XIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-/** Silhouette placeholder rendered as an inline SVG data URL */
 const PLACEHOLDER_FRONT =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='800' viewBox='0 0 600 800'%3E%3Crect width='600' height='800' fill='%231a1a1a'/%3E%3Ccircle cx='300' cy='240' r='110' fill='%23333'/%3E%3Cellipse cx='300' cy='620' rx='190' ry='200' fill='%23333'/%3E%3C/svg%3E";
 
@@ -109,13 +108,6 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
               <h3 className="text-2xl font-bold mb-1">{member.name}</h3>
               <p className="text-white/70 font-medium">{member.role}</p>
             </div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isFlipped ? 0 : 1 }}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center"
-            >
-              <span className="text-xs text-white/60">→</span>
-            </motion.div>
           </div>
         </div>
 
@@ -145,7 +137,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                 </p>
                 <div className="flex gap-3">
                   {member.linkedin && (
-                    
+                    <a
                       href={member.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -157,7 +149,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                     </a>
                   )}
                   {member.twitter && (
-                    
+                    <a
                       href={member.twitter}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -169,7 +161,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                     </a>
                   )}
                   {member.instagram && (
-                    
+                    <a
                       href={member.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
