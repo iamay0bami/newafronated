@@ -55,7 +55,7 @@ const teamMembers: TeamMember[] = [
     role: "Content Writer",
     bio: "Dedicated Content Writer crafting simple, engaging messaging for clear brand communication and social media growth.",
     frontImage: "/veronica-front.png",
-    backImage: "/veronica-back.png",,
+    backImage: "/veronica-back.png",
     instagram: "https://www.instagram.com/verah_skill_guild/",
   },
   {
