@@ -1,33 +1,18 @@
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
-import { useState, useEffect } from "react";
-import { AfronatedLogo } from "./AfronatedLogo";
 
 export function Hero() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Video / image background */}
+      {/* Video background — iframe works on both desktop and mobile */}
       <div className="absolute inset-0 z-0">
-        {isMobile ? (
-          <img src="https://img.youtube.com/vi/YnsnAwQaZhM/maxresdefault.jpg" alt="Hero Background" className="w-full h-full object-cover"/>
-        ) : (
-          <iframe
-            src="https://www.youtube.com/embed/YnsnAwQaZhM?autoplay=1&mute=1&loop=1&playlist=YnsnAwQaZhM&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-            title="Hero Background"
-            className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            allow="autoplay; encrypted-media"
-            style={{ border: "none", minWidth: "100vw", minHeight: "100vh" }}
-          />
-        )}
+        <iframe
+          src="https://www.youtube.com/embed/YnsnAwQaZhM?autoplay=1&mute=1&loop=1&playlist=YnsnAwQaZhM&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+          title="Hero Background"
+          className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          allow="autoplay; encrypted-media"
+          style={{ border: "none", minWidth: "100vw", minHeight: "100vh" }}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black"/>
       </div>
 
@@ -41,11 +26,6 @@ export function Hero() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7 }} className="mb-6 flex justify-center">
-            {/*
-              Hero sits on a dark overlay (bg-black gradient), so we always
-              need the logo inverted to white here regardless of global theme.
-              We apply the invert+screen treatment directly.
-            */}
             <img
               src="/logo-transparent.png"
               alt="Afronated"
