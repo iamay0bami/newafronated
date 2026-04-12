@@ -61,7 +61,7 @@ const teamMembers: TeamMember[] = [
   {
     name: "Bamgbola Onaopemipo",
     role: "Content Creator",
-    bio: "A creative storyteller and content creator dedicated to student engagement and driving community impact through purposeful, high-impact media.",
+    bio: "A creative storyteller and content creator driving student engagement and purposeful community impact.",
     frontImage: "/opemipo-front.png",
     backImage: "/opemipo-back.png",
     linkedin: "https://linkedin.com",
