@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useT } from "../context/ThemeContext";
 
 const SUCCESS_MSG = "The message has been delivered and the team would get back as soon as possible.";
-const EMAILJS_SERVICE_ID  = "service_x5fcnhf";
-const EMAILJS_TEMPLATE_ID = "template_9hpm5sg";
-const EMAILJS_PUBLIC_KEY  = "YSYfGZMb3olvlUCBX";
+const EMAILJS_SERVICE_ID  = "service_xamyetk";
+const EMAILJS_TEMPLATE_ID = "template_a4il80f";
+const EMAILJS_PUBLIC_KEY  = "oBwCQc9U5DCQ8nOpU";
 
 async function sendViaEmailJS(params: Record<string, string>) {
   const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -28,7 +28,7 @@ export function Submit() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await sendViaEmailJS({ to_email: "ayobamiagboola2004@gmail.com", from_name: formData.name, from_email: formData.email, reply_to: formData.email, intention: formData.intention, social: formData.socialHandle, message: formData.message, subject: `Submit inquiry from ${formData.name}` });
+      await sendViaEmailJS({ to_email: "afronated@gmail.com", from_name: formData.name, from_email: formData.email, reply_to: formData.email, intention: formData.intention, social: formData.socialHandle, message: formData.message, subject: `Submit inquiry from ${formData.name}` });
       setFormData({ name: "", email: "", intention: "", socialHandle: "", message: "" });
       setStatus("success");
     } catch { setStatus("error"); }
