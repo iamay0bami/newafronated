@@ -31,11 +31,11 @@ interface TeamMember {
 
 const teamMembers: TeamMember[] = [
   {
-    name: "Onahi Ijeh (Big Wizdom)",
+    name: "Onahi Ijeh",
     role: "Founder & Creative Director",
     bio: "A storyteller and curator transforming ideas into resonant visuals and high-impact content rooted in youth culture.",
-    frontImage: "/onahi-blackdress.png",
-    backImage: "/onahi-party1.png",
+    frontImage: "/onahi-party1.png",
+    backImage: "/onahi-pancake.png",
     linkedin: "https://www.linkedin.com/in/onahi-ijeh-53b94a323/",
     twitter: "https://x.com/shee_nahi",
     instagram: "https://www.instagram.com/onahiijeh",
