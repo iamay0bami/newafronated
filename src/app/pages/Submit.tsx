@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useT } from "../context/ThemeContext";
 
 const SUCCESS_MSG = "The message has been delivered and the team would get back as soon as possible.";
-const EMAILJS_SERVICE_ID  = "service_xamyetk";
+const EMAILJS_SERVICE_ID  = "service_u74ua9d";
 const EMAILJS_TEMPLATE_ID = "template_a4il80f";
 const EMAILJS_PUBLIC_KEY  = "oBwCQc9U5DCQ8nOpU";
 
