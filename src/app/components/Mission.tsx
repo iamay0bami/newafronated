@@ -1,12 +1,13 @@
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useT } from "../context/ThemeContext";
+import { MediumFeed } from "./MediumFeed";
 
 export function Mission() {
   const T = useT();
 
   return (
-    <section id="mission" className={`relative py-24 md:py-32 lg:py-40 px-4 md:px-8 overflow-hidden transition-colors duration-300 ${T.bg}`}>
+    <section id="mission" className={`relative py-24 md:py-32 lg:py-40 overflow-hidden transition-colors duration-300 ${T.bg}`}>
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -17,7 +18,8 @@ export function Mission() {
         }} />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      {/* ── Main two-column content ─────────────────────────────────── */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8 }}>
@@ -52,6 +54,9 @@ export function Mission() {
             </motion.a>
           </motion.div>
         </div>
+
+        {/* ── Medium article feed ──────────────────────────────────── */}
+        <MediumFeed />
       </div>
 
       <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 0.05, scale: 1 }}
