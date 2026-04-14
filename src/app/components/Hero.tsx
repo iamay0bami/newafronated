@@ -4,16 +4,18 @@ import { Play } from "lucide-react";
 export function Hero() {
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Video background — iframe works on both desktop and mobile */}
+      {/* Video background */}
       <div className="absolute inset-0 z-0">
-        <iframe
-          src="https://www.youtube.com/embed/YnsnAwQaZhM?autoplay=1&mute=1&loop=1&playlist=YnsnAwQaZhM&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-          title="Hero Background"
-          className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          allow="autoplay; encrypted-media"
-          style={{ border: "none", minWidth: "100vw", minHeight: "100vh" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black"/>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover"
+        >
+          <source src="/hero-reel.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
       </div>
 
       {/* Content */}
@@ -44,7 +46,7 @@ export function Hero() {
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={() => document.getElementById("interviews")?.scrollIntoView({ behavior: "smooth" })}
             className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full hover:bg-[#ef4444] hover:text-white transition-all duration-300 font-bold tracking-wide">
-            <Play className="w-5 h-5"/> WATCH OUR WORK
+            <Play className="w-5 h-5" /> WATCH OUR WORK
           </motion.button>
         </div>
       </div>
@@ -54,7 +56,7 @@ export function Hero() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
         <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2">
-          <motion.div className="w-1.5 h-2 bg-white/60 rounded-full"/>
+          <motion.div className="w-1.5 h-2 bg-white/60 rounded-full" />
         </motion.div>
       </motion.div>
     </section>
