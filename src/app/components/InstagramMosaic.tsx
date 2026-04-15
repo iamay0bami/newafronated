@@ -14,14 +14,27 @@ interface InstaPost {
 }
 
 // ─── Behold.so widget config ──────────────────────────────────────────────────
-// Behold.so is a no-auth Instagram feed service.
-// Client needs to sign up at behold.so with their Instagram handle @afro.nated,
-// grab their widget ID, and replace the value below.
-// Free tier gives 6 posts which is perfect for this mosaic.
-const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy";
+//
+// Behold.so returns JSON at: https://feeds.behold.so/<WIDGET_ID>
+//
+// The API returns an ARRAY of post objects. Each object has these relevant keys:
+//   - id            : string
+//   - mediaUrl      : string  (full-size image URL)
+//   - thumbnailUrl  : string  (video thumbnail / smaller image)
+//   - permalink     : string  (instagram.com link)
+//   - caption       : string
+//   - mediaType     : "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM"
+//
+// If posts are not loading, check:
+//   1. The widget ID is correct (copy from behold.so dashboard)
+//   2. The Instagram account is connected and the widget is "Live" (not draft)
+//   3. Open https://feeds.behold.so/<YOUR_ID> directly in your browser —
+//      if it returns JSON, the ID is correct. If 404, regenerate the widget.
+//   4. Behold free tier caches feeds; allow a few minutes after connecting.
 
-// Fallback placeholder tiles shown before live data loads / if no widget ID set
-// FIX: Changed length from 9 to 6
+const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy"; // ← replace if needed
+
+// Fallback skeleton tiles shown while loading / if fetch fails
 const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
   id: String(i),
   mediaUrl: "",
@@ -41,12 +54,12 @@ const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
 //  └────┴───────────────┘
 
 const MOSAIC_LAYOUT = [
-  { col: "col-span-2 row-span-2", delay: 0 },      // 0 — big
-  { col: "col-span-1 row-span-1", delay: 0.08 },   // 1
-  { col: "col-span-1 row-span-1", delay: 0.16 },   // 2
-  { col: "col-span-2 row-span-1", delay: 0.24 },   // 3 — wide
-  { col: "col-span-1 row-span-1", delay: 0.32 },   // 4
-  { col: "col-span-2 row-span-1", delay: 0.4 },    // 5 — wide
+  { col: "col-span-2 row-span-2", delay: 0 },
+  { col: "col-span-1 row-span-1", delay: 0.08 },
+  { col: "col-span-1 row-span-1", delay: 0.16 },
+  { col: "col-span-2 row-span-1", delay: 0.24 },
+  { col: "col-span-1 row-span-1", delay: 0.32 },
+  { col: "col-span-2 row-span-1", delay: 0.4 },
 ];
 
 // ─── Single tile ──────────────────────────────────────────────────────────────
@@ -83,14 +96,12 @@ function MosaicTile({
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      {/* Image / Skeleton */}
       {isEmpty ? (
         <div
           className={`w-full h-full min-h-[120px] animate-pulse ${
             T.isDark ? "bg-white/5" : "bg-black/5"
           }`}
         >
-          {/* Branded skeleton */}
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
               <div className="w-5 h-[2px] bg-[#ef4444] mx-auto mb-2" />
@@ -107,10 +118,16 @@ function MosaicTile({
           alt={post.caption ?? `Afronated post ${index + 1}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
+          // If the mediaUrl 403s (Instagram CDN token expired), fall back to
+          // the Instagram permalink thumbnail via oEmbed — or just hide the tile.
+          onError={(e) => {
+            const img = e.currentTarget;
+            // Hide the broken image gracefully
+            img.style.display = "none";
+          }}
         />
       )}
 
-      {/* Overlay on hover */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-400 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -126,7 +143,6 @@ function MosaicTile({
         </motion.div>
       </div>
 
-      {/* Red border accent on hover */}
       <div className="absolute inset-0 border-0 group-hover:border group-hover:border-[#ef4444]/50 transition-all duration-300 pointer-events-none" />
     </motion.a>
   );
@@ -139,32 +155,62 @@ export function InstagramMosaic() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.15 });
   const [posts, setPosts] = useState<InstaPost[]>(PLACEHOLDER_POSTS);
-  const [loaded, setLoaded] = useState(false);
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
 
-  // Load from Behold widget API if ID is set
   useEffect(() => {
-    // FIX: Removed the blocker that was specifically stopping your ID from firing
-    if (!BEHOLD_WIDGET_ID) return;
+    if (!BEHOLD_WIDGET_ID) {
+      setStatus("error");
+      return;
+    }
 
+    // Behold.so feed endpoint — returns a JSON array of post objects.
+    // No auth required; CORS is allowed from any origin.
     fetch(`https://feeds.behold.so/${BEHOLD_WIDGET_ID}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          // FIX: Changed slice(0, 9) to slice(0, 6)
-          const parsed: InstaPost[] = data.slice(0, 6).map((p: Record<string, string>) => ({
-            id: p.id,
-            mediaUrl: p.mediaUrl || p.thumbnailUrl || "",
-            permalink: p.permalink,
-            caption: p.caption?.slice(0, 100),
-            mediaType: (p.mediaType as InstaPost["mediaType"]) || "IMAGE",
-          }));
-          setPosts(parsed);
-          setLoaded(true);
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // data can be either:
+        //   A) An array of posts directly: [ { id, mediaUrl, ... }, ... ]
+        //   B) A widget object with a posts array: { posts: [...], ... }
+        const raw: Record<string, unknown>[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.posts)
+          ? data.posts
+          : [];
+
+        if (raw.length === 0) {
+          // Widget exists but has no posts yet (still syncing)
+          setStatus("error");
+          return;
         }
+
+        const parsed: InstaPost[] = raw.slice(0, 6).map((p) => {
+          // Behold returns `mediaUrl` for images and `thumbnailUrl` for videos.
+          // Some older widget versions used `prunedTagUrl` or `sizes` objects.
+          const mediaUrl =
+            (p.mediaUrl as string) ||
+            (p.thumbnailUrl as string) ||
+            // Fallback: try the first entry of a `sizes` object if present
+            ((p.sizes as Record<string, string>)?.medium) ||
+            "";
+
+          return {
+            id: String(p.id ?? Math.random()),
+            mediaUrl,
+            permalink: String(p.permalink ?? "https://www.instagram.com/afro.nated"),
+            caption: p.caption ? String(p.caption).slice(0, 120) : undefined,
+            mediaType: (p.mediaType as InstaPost["mediaType"]) || "IMAGE",
+          };
+        });
+
+        setPosts(parsed);
+        setStatus("loaded");
       })
-      .catch(() => {
-        // Graceful degradation: show skeleton grid with link to profile
-        setLoaded(true);
+      .catch((err) => {
+        console.warn("[InstagramMosaic] Could not load Behold feed:", err);
+        // Keep skeleton tiles visible; they link to the IG profile
+        setStatus("error");
       });
   }, []);
 
@@ -202,7 +248,6 @@ export function InstagramMosaic() {
         className="grid grid-cols-3 gap-1.5 md:gap-2"
         style={{ gridAutoRows: "clamp(80px, 14vw, 180px)" }}
       >
-        {/* FIX: Changed slice(0, 9) to slice(0, 6) */}
         {posts.slice(0, 6).map((post, i) => (
           <MosaicTile
             key={post.id || i}
@@ -214,7 +259,14 @@ export function InstagramMosaic() {
         ))}
       </div>
 
-      {/* Follow CTA strip */}
+      {/* Status hint — shown when loaded but could also debug */}
+      {status === "error" && (
+        <p className={`mt-3 text-center text-[10px] tracking-widest uppercase ${T.textFaint}`}>
+          Visit us on Instagram for the latest posts
+        </p>
+      )}
+
+      {/* Follow CTA */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}

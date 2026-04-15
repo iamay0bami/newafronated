@@ -1,37 +1,100 @@
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Force play on mobile — iOS Safari requires a direct .play() call
+    // after a user gesture OR with muted + playsinline + autoplay combo.
+    // We call play() manually as a belt-and-suspenders approach.
+    const tryPlay = () => {
+      video.play().catch(() => {
+        // Silently swallow — autoplay policy blocked it (fine, poster shows)
+      });
+    };
+
+    // Attempt immediately
+    tryPlay();
+
+    // Also attempt on first user interaction (covers iOS strict mode)
+    const onInteraction = () => {
+      tryPlay();
+      document.removeEventListener("touchstart", onInteraction);
+      document.removeEventListener("click", onInteraction);
+    };
+    document.addEventListener("touchstart", onInteraction, { passive: true });
+    document.addEventListener("click", onInteraction);
+
+    return () => {
+      document.removeEventListener("touchstart", onInteraction);
+      document.removeEventListener("click", onInteraction);
+    };
+  }, []);
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Video background */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{ width: "100%", height: "100%" }}
-      >
+      {/* ── Video background ── */}
+      <div className="absolute inset-0 z-0">
+        {/*
+          KEY FIXES FOR FULLSCREEN + MOBILE:
+          1. `object-fit: cover` + `object-position: center` fills the frame
+             regardless of the video's original aspect ratio.
+          2. `width/height: 100%` on both the wrapper and video element.
+          3. `playsinline` (camelCase: playsInline) is REQUIRED for iOS Safari
+             to play inline instead of opening the native player.
+          4. `muted` is REQUIRED for autoplay to work in any modern browser.
+          5. `autoPlay` alone isn't enough on mobile — see useEffect above.
+          6. A `poster` attribute shows a solid dark frame while the video loads,
+             preventing the white/blank background flash on mobile.
+             Replace "/hero-poster.jpg" with a real frame grab if you have one,
+             or remove the attribute to fall back to the CSS background below.
+        */}
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
           disablePictureInPicture
           preload="auto"
+          poster="/hero-poster.jpg"
           className="absolute inset-0 w-full h-full"
           style={{
             objectFit: "cover",
             objectPosition: "center center",
-            minWidth: "100%",
-            minHeight: "100%",
+            /*
+              Force the video element itself to cover the full viewport.
+              Without explicit width/height 100%, some browsers (especially
+              mobile Safari) render at the video's intrinsic resolution.
+            */
             width: "100%",
             height: "100%",
+            /*
+              If the video is portrait-oriented (shot on mobile in 9:16),
+              `object-fit: cover` will crop the sides to fill landscape.
+              That's intentional — it's the correct behaviour for a hero bg.
+            */
           }}
         >
           <source src="/hero-reel.mp4" type="video/mp4" />
         </video>
+
+        {/* Fallback: solid dark bg shown before video loads / if it fails */}
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)" }}
+        />
+
+        {/* Overlay gradient — darkens edges, keeps text readable */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
       </div>
 
-      {/* Content */}
+      {/* ── Hero content ── */}
       <div className="relative z-10 h-full flex items-center justify-center px-4 md:px-8">
         <div className="text-center max-w-5xl">
           <motion.div
@@ -88,7 +151,7 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* ── Scroll indicator ── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
