@@ -41,18 +41,12 @@ export function Navbar() {
 
   const isHome = location.pathname === "/";
 
-  /**
-   * Navigate to a section anchor.
-   * - If already on home: smooth-scroll directly.
-   * - If on any other page: navigate to "/" then scroll after mount.
-   */
   const goToSection = (id: string) => {
     setIsMobileMenuOpen(false);
     if (isHome) {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/");
-      // Give the home page a tick to mount, then scroll
       setTimeout(() => {
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       }, 120);
@@ -73,13 +67,17 @@ export function Navbar() {
   ];
 
   const socialLinks = [
-    { href: "https://www.youtube.com/@Afronated",   icon: <Youtube className="w-4 h-4 md:w-5 md:h-5"/>,   label: "YouTube"   },
-    { href: "https://www.instagram.com/afro.nated", icon: <Instagram className="w-4 h-4 md:w-5 md:h-5"/>, label: "Instagram" },
-    { href: "https://x.com/AfroNated",              icon: <XIcon className="w-4 h-4 md:w-5 md:h-5"/>,      label: "X"         },
-    { href: "https://medium.com/@afro-nated",       icon: <FaMedium className="w-4 h-4 md:w-5 md:h-5"/>,  label: "Medium"    },
-    { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4 md:w-5 md:h-5"/>,  label: "TikTok"    },
+    { href: "https://www.youtube.com/@Afronated",   icon: <Youtube className="w-4 h-4"/>,   label: "YouTube"   },
+    { href: "https://www.instagram.com/afro.nated", icon: <Instagram className="w-4 h-4"/>, label: "Instagram" },
+    { href: "https://x.com/AfroNated",              icon: <XIcon className="w-4 h-4"/>,      label: "X"         },
+    { href: "https://medium.com/@afro-nated",       icon: <FaMedium className="w-4 h-4"/>,  label: "Medium"    },
+    { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4"/>,  label: "TikTok"    },
   ];
 
+  // ─── FIX: Use `lg` breakpoint (1024px) for the desktop nav instead of `md`
+  // (768px). At iPad Mini (768px) and iPad Air (820px) the nav links + social
+  // icons + theme toggle all had to cram into the pill — switching to lg gives
+  // those tablet sizes a clean hamburger menu instead of an overflowing row.
   const linkCls = `text-sm font-medium transition-colors tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
   const mobileLinkCls = `w-full text-left px-4 py-3 rounded-lg transition-all font-medium tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
 
@@ -90,24 +88,23 @@ export function Navbar() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 md:px-8"
       >
-        <div className={`flex items-center justify-between w-full max-w-6xl px-4 md:px-8 py-3 md:py-4 rounded-full backdrop-blur-xl border shadow-2xl transition-colors duration-300 ${T.bgNav}`}>
+        <div className={`flex items-center justify-between w-full max-w-6xl px-4 md:px-6 lg:px-8 py-3 md:py-4 rounded-full backdrop-blur-xl border shadow-2xl transition-colors duration-300 ${T.bgNav}`}>
 
-          {/* ── Logo → always goes to home hero ── */}
+          {/* ── Logo ── */}
           <Link
             to="/"
             onClick={() => {
               closeMobile();
-              // If already home, just scroll to top/hero
               if (isHome) window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             className="flex-shrink-0 transition-transform hover:scale-105 active:scale-95"
             aria-label="Go to home"
           >
-            <AfronatedLogo className="h-8 md:h-10 w-auto" style={{ maxWidth: 130 }} />
+            <AfronatedLogo className="h-7 md:h-8 lg:h-10 w-auto" style={{ maxWidth: 120 }} />
           </Link>
 
-          {/* ── Desktop nav links ── */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* ── Desktop nav links — visible only at lg+ (≥1024px) ── */}
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map(({ label, action }) => (
               <button key={label} onClick={action} className={linkCls}>{label}</button>
             ))}
@@ -115,34 +112,46 @@ export function Navbar() {
             <Link to="/partner" onClick={closeMobile} className={linkCls}>PARTNER</Link>
           </div>
 
-          {/* ── Social icons + Theme toggle + Hamburger ── */}
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden sm:flex items-center gap-2 md:gap-3">
+          {/* ── Right cluster: social icons + theme toggle + hamburger ── */}
+          <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3">
+
+            {/* Social icons — hidden on mobile, visible from md+ but only 3 icons
+                to avoid overflow on iPad Mini; all 5 shown at lg+ */}
+            <div className="hidden md:flex lg:hidden items-center gap-2">
+              {/* Show only YouTube, Instagram, X on md tablets to save space */}
+              {socialLinks.slice(0, 3).map(({ href, icon, label }) => (
+                <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
+                   className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
+              ))}
+            </div>
+            <div className="hidden lg:flex items-center gap-2 xl:gap-3">
               {socialLinks.map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
                    className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
               ))}
             </div>
 
+            {/* Theme toggle */}
             <button onClick={T.toggleTheme} aria-label="Toggle theme"
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border ${T.border} ${T.iconColor} hover:text-[#ef4444]`}>
+              className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all border ${T.border} ${T.iconColor} hover:text-[#ef4444]`}>
               {T.isDark ? <SunIcon /> : <MoonIcon />}
             </button>
 
+            {/* Hamburger — shown below lg (covers mobile + iPad Mini/Air) */}
             <button onClick={() => setIsMobileMenuOpen(o => !o)} aria-label="Toggle menu"
-              className={`md:hidden transition-colors ${T.textMuted}`}>
+              className={`lg:hidden transition-colors ${T.textMuted}`}>
               {isMobileMenuOpen ? <X className="w-6 h-6"/> : <Menu className="w-6 h-6"/>}
             </button>
           </div>
         </div>
       </motion.nav>
 
-      {/* ── Mobile menu ── */}
+      {/* ── Mobile / tablet slide-down menu (shown below lg) ── */}
       <motion.div
         initial={false}
         animate={{ opacity: isMobileMenuOpen ? 1 : 0, y: isMobileMenuOpen ? 0 : -20, pointerEvents: isMobileMenuOpen ? "auto" : "none" }}
         transition={{ duration: 0.3 }}
-        className="fixed top-24 left-0 right-0 z-40 md:hidden px-4"
+        className="fixed top-24 left-0 right-0 z-40 lg:hidden px-4"
       >
         <div className={`backdrop-blur-xl border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${T.isDark ? "bg-black/95" : "bg-white/98"} ${T.border}`}>
           <div className="p-6 space-y-2">
@@ -171,7 +180,7 @@ export function Navbar() {
 
       {isMobileMenuOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={closeMobile}/>
       )}
     </>

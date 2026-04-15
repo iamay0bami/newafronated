@@ -14,21 +14,8 @@ interface InstaPost {
 }
 
 // ─── Behold.so widget config ──────────────────────────────────────────────────
-//
-// Behold.so returns JSON at: https://feeds.behold.so/<WIDGET_ID>
-//
-// For IMAGE posts:   mediaUrl  → the full image
-// For VIDEO/REELS:   thumbnailUrl → the poster frame thumbnail
-//                    (mediaUrl is the video file itself — we DON'T embed it,
-//                     we just show the thumbnail and link to Instagram)
-//
-// If reels tiles are blank, confirm in the Behold dashboard that the widget
-// has "Include Reels" toggled ON.  Also open the raw feed URL in your browser
-// and check that the reel objects have a non-empty thumbnailUrl field.
+const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy";
 
-const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy"; // ← replace if needed
-
-// Fallback skeleton tiles shown while loading / if fetch fails
 const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
   id: String(i),
   mediaUrl: "",
@@ -78,7 +65,7 @@ function MosaicTile({
       href={post.permalink}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${layout.col} relative overflow-hidden cursor-pointer group min-h-[120px]`}
+      className={`${layout.col} relative overflow-hidden cursor-pointer group min-h-[80px]`}
       initial={{ opacity: 0, scale: 0.88, filter: "blur(8px)" }}
       animate={
         isRevealed
@@ -92,9 +79,8 @@ function MosaicTile({
       }}
     >
       {isEmpty ? (
-        /* Skeleton / placeholder tile */
         <div
-          className={`w-full h-full min-h-[120px] animate-pulse ${
+          className={`w-full h-full min-h-[80px] animate-pulse ${
             T.isDark ? "bg-white/5" : "bg-black/5"
           }`}
         >
@@ -109,14 +95,12 @@ function MosaicTile({
           </div>
         </div>
       ) : (
-        /* Actual post thumbnail */
         <img
           src={post.mediaUrl}
           alt={post.caption ?? `Afronated post ${index + 1}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
           onError={(e) => {
-            // Hide broken images gracefully
             const img = e.currentTarget;
             img.style.display = "none";
           }}
@@ -139,7 +123,7 @@ function MosaicTile({
         </motion.div>
       </div>
 
-      {/* Video / Reel badge — always visible so users know it's playable */}
+      {/* Video / Reel badge */}
       {isVideo && !isEmpty && (
         <div className="absolute top-2 right-2 z-10 pointer-events-none">
           <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -174,7 +158,6 @@ export function InstagramMosaic() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        // Behold returns either an array of posts, or { posts: [...] }
         const raw: Record<string, unknown>[] = Array.isArray(data)
           ? data
           : Array.isArray(data?.posts)
@@ -188,23 +171,11 @@ export function InstagramMosaic() {
 
         const parsed: InstaPost[] = raw.slice(0, 6).map((p) => {
           const mediaType = (p.mediaType as InstaPost["mediaType"]) || "IMAGE";
-
-          /*
-           * Thumbnail resolution strategy:
-           *
-           * IMAGE / CAROUSEL_ALBUM  → mediaUrl  (the full image)
-           * VIDEO / REEL            → thumbnailUrl  (the poster frame)
-           *                           fall back to mediaUrl if thumbnailUrl absent
-           *
-           * Behold also exposes a `sizes` object on some plans with keys like
-           * "thumbnail", "medium", "large" — we try those too.
-           */
           const sizes = p.sizes as Record<string, string> | undefined;
 
           let mediaUrl = "";
 
           if (mediaType === "VIDEO") {
-            // Prefer thumbnailUrl for video posts (it's the poster frame)
             mediaUrl =
               (p.thumbnailUrl as string) ||
               (p.mediaUrl as string) ||
@@ -212,7 +183,6 @@ export function InstagramMosaic() {
               sizes?.thumbnail ||
               "";
           } else {
-            // Images / carousels — prefer mediaUrl
             mediaUrl =
               (p.mediaUrl as string) ||
               (p.thumbnailUrl as string) ||
@@ -266,10 +236,30 @@ export function InstagramMosaic() {
         </a>
       </div>
 
-      {/* Mosaic grid */}
+      {/*
+        ── Mosaic grid ────────────────────────────────────────────────────────
+        FIX 1 — Row height is now responsive.
+
+        Original: gridAutoRows: "clamp(80px, 14vw, 180px)"
+        At 375px wide (iPhone SE) 14vw = 52.5px — far too short. The 3-column
+        layout makes each small tile only ~125px wide × 52px tall, causing
+        severe squishing and the tall tile (rows 1-2) to be only ~107px.
+
+        Fix: use a slightly larger vw value (18vw) so small-phone tiles are
+        taller, and raise the lower clamp floor to 90px.
+
+          375px → 18vw = 67.5px → clamped to 90px  ✓
+          414px → 18vw = 74.5px → clamped to 90px  ✓
+          540px → 18vw = 97px                        ✓
+          768px → 18vw = 138px (iPad Mini)           ✓
+         1280px → 18vw = 230px → clamped to 180px   ✓ (cap unchanged)
+
+        FIX 2 — Gap is reduced on very small screens to prevent column bleed.
+        gap-1 on mobile (4px), gap-1.5 on sm+ (6px), gap-2 on md+ (8px).
+      ──────────────────────────────────────────────────────────────────────── */}
       <div
-        className="grid grid-cols-3 gap-1.5 md:gap-2"
-        style={{ gridAutoRows: "clamp(80px, 14vw, 180px)" }}
+        className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2"
+        style={{ gridAutoRows: "clamp(90px, 18vw, 180px)" }}
       >
         {posts.slice(0, 6).map((post, i) => (
           <MosaicTile
@@ -288,12 +278,18 @@ export function InstagramMosaic() {
         </p>
       )}
 
-      {/* Follow CTA */}
+      {/*
+        ── Follow CTA ─────────────────────────────────────────────────────────
+        FIX 3 — Add explicit top margin (mt-6) so the CTA never sits flush
+        against the last grid tile on phones. The original mt-4 (16px) was
+        occasionally absorbed by the grid gap, causing visual overlap on
+        narrow screens with shorter row heights.
+      ──────────────────────────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.6, delay: 0.9 }}
-        className="mt-4 flex justify-end"
+        className="mt-6 flex justify-end"
       >
         <a
           href="https://www.instagram.com/afro.nated"

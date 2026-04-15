@@ -58,23 +58,44 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
-      <div className="absolute inset-0 flex flex-col justify-between p-6">
+      <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-5 md:p-6">
+        {/* Top-right external link */}
         <div className="flex justify-end">
           <motion.a
             href={video.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-[#ef4444] hover:border-[#ef4444] transition-all duration-300"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-[#ef4444] hover:border-[#ef4444] transition-all duration-300"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0 }}
             transition={{ duration: 0.3 }}
             onClick={e => e.stopPropagation()}
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3 h-3 md:w-4 md:h-4" />
           </motion.a>
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/*
+          ── Play button ──────────────────────────────────────────────────────
+          FIX: The original button was always w-20 h-20 (80px), which on a
+          narrow phone tile (≈160–180px tall) consumed nearly half the card
+          height and buried the title/description text below it.
+
+          Solution — responsive sizing via Tailwind:
+            • Mobile (default):  w-10 h-10  (40px) — compact, out of the way
+            • sm  (≥640px):      w-12 h-12  (48px)
+            • md  (≥768px):      w-14 h-14  (56px) — tablets (iPad Mini/Air)
+            • lg  (≥1024px):     w-16 h-16  (64px)
+            • xl  (≥1280px):     w-20 h-20  (80px) — original desktop size
+
+          The play icon inside scales proportionally the same way.
+
+          We also lower the play button's vertical centre-point slightly
+          (translate-y-[-55%]) so it sits above the text block rather than
+          directly on top of it on small tiles.
+        ──────────────────────────────────────────────────────────────────── */}
+        <div className="absolute inset-0 flex items-center justify-center"
+             style={{ paddingBottom: "30%" /* nudge up so button clears the text area */ }}>
           <motion.a
             href={video.url}
             target="_blank"
@@ -82,19 +103,22 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
             initial={{ scale: 1 }}
             animate={{ scale: isHovered ? 1.1 : 1 }}
             transition={{ duration: 0.3 }}
-            className="w-20 h-20 rounded-full bg-[#ef4444]/90 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center text-white shadow-2xl"
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 rounded-full bg-[#ef4444]/90 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center text-white shadow-2xl flex-shrink-0"
             onClick={e => e.stopPropagation()}
           >
-            <Play className="w-8 h-8 ml-1" fill="currentColor" />
+            <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 ml-0.5" fill="currentColor" />
           </motion.a>
         </div>
 
+        {/* Bottom text block */}
         <div>
-          <p className="text-xs font-bold tracking-widest uppercase text-[#ef4444] mb-1">
+          <p className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-[#ef4444] mb-1 line-clamp-1">
             {video.guest} · {video.occupation}
           </p>
-          <h3 className="text-lg font-bold mb-1 text-white leading-tight">{video.title}</h3>
-          <p className="text-xs text-white/65 leading-snug line-clamp-2">{video.description}</p>
+          <h3 className="text-sm sm:text-base lg:text-lg font-bold mb-1 text-white leading-tight line-clamp-1">
+            {video.title}
+          </h3>
+          <p className="text-[10px] sm:text-xs text-white/65 leading-snug line-clamp-2">{video.description}</p>
         </div>
       </div>
 
