@@ -50,9 +50,6 @@ const MOSAIC_LAYOUT = [
   { col: "col-span-2 row-span-1", delay: 0.24 },   // 3 — wide
   { col: "col-span-1 row-span-1", delay: 0.32 },   // 4
   { col: "col-span-2 row-span-1", delay: 0.4 },    // 5 — wide
-  { col: "col-span-1 row-span-2", delay: 0.48 },   // 6 — tall
-  { col: "col-span-1 row-span-1", delay: 0.56 },   // 7
-  { col: "col-span-1 row-span-1", delay: 0.64 },   // 8
 ];
 
 // ─── Single tile ──────────────────────────────────────────────────────────────
@@ -149,7 +146,7 @@ export function InstagramMosaic() {
 
   // Load from Behold widget API if ID is set
   useEffect(() => {
-    if (BEHOLD_WIDGET_ID === "YOUR_BEHOLD_WIDGET_ID") return;
+    if (BEHOLD_WIDGET_ID === "RnYIoNYflGt00tl3LIWy") return;
 
     fetch(`https://feeds.behold.so/${BEHOLD_WIDGET_ID}`)
       .then((r) => r.json())
