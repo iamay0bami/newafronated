@@ -10,7 +10,7 @@ import { useT } from "../context/ThemeContext";
 // Just paste the long numeric string as videoId.
 
 const FEATURED_TIKTOK = {
-  videoId: "7445888531222803742", // ← update to latest video ID from @afronated
+  videoId: "7627601060894461204", // ← update to latest video ID from @afronated
   caption: "Our latest drop — tune in.",
   profileUrl: "https://www.tiktok.com/@afronated",
 };
