@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 import { MediumFeed } from "./MediumFeed";
+import { InstagramMosaic } from "./InstagramMosaic";
 
 export function Mission() {
   const T = useT();
@@ -57,6 +58,9 @@ export function Mission() {
 
         {/* ── Medium article feed ──────────────────────────────────── */}
         <MediumFeed />
+
+        {/* ── Instagram mosaic ─────────────────────────────────────── */}
+        <InstagramMosaic />
       </div>
 
       <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 0.05, scale: 1 }}
