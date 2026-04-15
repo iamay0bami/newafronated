@@ -1,27 +1,24 @@
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Force play on mobile — iOS Safari requires a direct .play() call
-    // after a user gesture OR with muted + playsinline + autoplay combo.
-    // We call play() manually as a belt-and-suspenders approach.
+    // Attempt autoplay immediately and on first user interaction
     const tryPlay = () => {
       video.play().catch(() => {
-        // Silently swallow — autoplay policy blocked it (fine, poster shows)
+        // Autoplay blocked — video poster/fallback gradient will show
       });
     };
 
-    // Attempt immediately
     tryPlay();
 
-    // Also attempt on first user interaction (covers iOS strict mode)
     const onInteraction = () => {
       tryPlay();
       document.removeEventListener("touchstart", onInteraction);
@@ -37,73 +34,123 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      {/* ── Video background ── */}
-      <div className="absolute inset-0 z-0">
-        {/*
-          KEY FIXES FOR FULLSCREEN + MOBILE:
-          1. `object-fit: cover` + `object-position: center` fills the frame
-             regardless of the video's original aspect ratio.
-          2. `width/height: 100%` on both the wrapper and video element.
-          3. `playsinline` (camelCase: playsInline) is REQUIRED for iOS Safari
-             to play inline instead of opening the native player.
-          4. `muted` is REQUIRED for autoplay to work in any modern browser.
-          5. `autoPlay` alone isn't enough on mobile — see useEffect above.
-          6. A `poster` attribute shows a solid dark frame while the video loads,
-             preventing the white/blank background flash on mobile.
-             Replace "/hero-poster.jpg" with a real frame grab if you have one,
-             or remove the attribute to fall back to the CSS background below.
-        */}
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          disablePictureInPicture
-          preload="auto"
-          poster="/hero-poster.jpg"
-          className="absolute inset-0 w-full h-full"
-          style={{
-            objectFit: "cover",
-            objectPosition: "center center",
+    <section
+      style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
+    >
+      {/* ── Video layer ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          // Fallback gradient shown while video loads or if it fails
+          background: "linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)",
+        }}
+      >
+        {!videoFailed && (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            disablePictureInPicture
+            preload="auto"
+            poster="/hero-poster.jpg"
+            onError={() => setVideoFailed(true)}
             /*
-              Force the video element itself to cover the full viewport.
-              Without explicit width/height 100%, some browsers (especially
-              mobile Safari) render at the video's intrinsic resolution.
-            */
-            width: "100%",
-            height: "100%",
-            /*
-              If the video is portrait-oriented (shot on mobile in 9:16),
-              `object-fit: cover` will crop the sides to fill landscape.
-              That's intentional — it's the correct behaviour for a hero bg.
-            */
-          }}
-        >
-          <source src="/hero-reel.mp4" type="video/mp4" />
-        </video>
+             * Why these exact styles:
+             *
+             * position absolute + inset 0 + width/height 100% — fills the
+             * container completely on every browser including mobile Safari.
+             *
+             * object-fit cover — crops the video to fill the frame regardless
+             * of its source aspect ratio.  If the client shot the video in
+             * portrait (9:16 on iPhone), this will zoom/crop it to fill a
+             * landscape 16:9 frame.  That is the correct behaviour for a hero
+             * background — there is no CSS-only way to "make a portrait video
+             * fill landscape without cropping" because pixels have to come from
+             * somewhere.  See the note below the component for what to tell the
+             * client if they want a non-cropped result.
+             *
+             * object-position center center — crops symmetrically so the
+             * subject stays centred.  If the subject is off-centre in the
+             * source video, the client should re-export with the subject
+             * centred, or you can change this to e.g. "center 20%" to bias
+             * toward the top.
+             *
+             * min-width / min-height 100% with width / height auto — classic
+             * "cover" trick that predates object-fit and acts as an extra
+             * safety net on very old WebViews.
+             */
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              // Translate back so the centre of the video aligns with the
+              // centre of the container.
+              transform: "translate(-50%, -50%)",
+              // These two lines implement "cover" for browsers that don't
+              // honour object-fit on <video> (old Android WebViews).
+              minWidth: "100%",
+              minHeight: "100%",
+              // On modern browsers object-fit handles everything.
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center center",
+              // Prevent any intrinsic size from leaking through.
+              display: "block",
+            }}
+          >
+            <source src="/hero-reel.mp4" type="video/mp4" />
+          </video>
+        )}
 
-        {/* Fallback: solid dark bg shown before video loads / if it fails */}
+        {/* Dark overlay — ensures text is always legible over any video frame */}
         <div
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.85) 100%)",
+          }}
         />
-
-        {/* Overlay gradient — darkens edges, keeps text readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
       </div>
 
       {/* ── Hero content ── */}
-      <div className="relative z-10 h-full flex items-center justify-center px-4 md:px-8">
-        <div className="text-center max-w-5xl">
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 1rem",
+        }}
+      >
+        <div style={{ textAlign: "center", maxWidth: "64rem" }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mb-6"
+            style={{ marginBottom: "1.5rem" }}
           >
-            <span className="inline-block px-4 py-2 bg-[#ef4444]/20 border border-[#ef4444]/40 rounded-full text-[#ef4444] text-xs md:text-sm font-bold tracking-widest uppercase">
+            <span
+              style={{
+                display: "inline-block",
+                padding: "0.5rem 1rem",
+                background: "rgba(239,68,68,0.20)",
+                border: "1px solid rgba(239,68,68,0.40)",
+                borderRadius: "9999px",
+                color: "#ef4444",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+              }}
+            >
               Creative Media Collective
             </span>
           </motion.div>
@@ -112,14 +159,18 @@ export function Hero() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="mb-6 flex justify-center"
+            style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "center" }}
           >
             <img
               src="/logo-transparent.png"
               alt="Afronated"
-              className="h-24 md:h-32 lg:h-40 xl:h-48 w-auto"
-              style={{ filter: "invert(1)", mixBlendMode: "screen" }}
               draggable={false}
+              style={{
+                height: "clamp(6rem, 12vw, 12rem)",
+                width: "auto",
+                filter: "invert(1)",
+                mixBlendMode: "screen",
+              }}
             />
           </motion.div>
 
@@ -127,7 +178,14 @@ export function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.9 }}
-            className="text-base md:text-lg lg:text-xl text-white/80 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
+            style={{
+              fontSize: "clamp(1rem, 2vw, 1.25rem)",
+              color: "rgba(255,255,255,0.80)",
+              maxWidth: "42rem",
+              margin: "0 auto 3rem",
+              fontWeight: 300,
+              lineHeight: 1.7,
+            }}
           >
             Amplifying African voices through powerful storytelling, innovative
             media, and cultural excellence.
@@ -156,14 +214,36 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+        style={{
+          position: "absolute",
+          bottom: "2rem",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+        }}
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2"
+          style={{
+            width: "1.5rem",
+            height: "2.5rem",
+            border: "2px solid rgba(255,255,255,0.30)",
+            borderRadius: "9999px",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            padding: "0.5rem",
+          }}
         >
-          <motion.div className="w-1.5 h-2 bg-white/60 rounded-full" />
+          <motion.div
+            style={{
+              width: "0.375rem",
+              height: "0.5rem",
+              background: "rgba(255,255,255,0.60)",
+              borderRadius: "9999px",
+            }}
+          />
         </motion.div>
       </motion.div>
     </section>

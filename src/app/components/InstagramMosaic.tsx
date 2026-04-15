@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { Instagram, ArrowUpRight } from "lucide-react";
+import { Instagram, ArrowUpRight, Play } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -17,20 +17,14 @@ interface InstaPost {
 //
 // Behold.so returns JSON at: https://feeds.behold.so/<WIDGET_ID>
 //
-// The API returns an ARRAY of post objects. Each object has these relevant keys:
-//   - id            : string
-//   - mediaUrl      : string  (full-size image URL)
-//   - thumbnailUrl  : string  (video thumbnail / smaller image)
-//   - permalink     : string  (instagram.com link)
-//   - caption       : string
-//   - mediaType     : "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM"
+// For IMAGE posts:   mediaUrl  → the full image
+// For VIDEO/REELS:   thumbnailUrl → the poster frame thumbnail
+//                    (mediaUrl is the video file itself — we DON'T embed it,
+//                     we just show the thumbnail and link to Instagram)
 //
-// If posts are not loading, check:
-//   1. The widget ID is correct (copy from behold.so dashboard)
-//   2. The Instagram account is connected and the widget is "Live" (not draft)
-//   3. Open https://feeds.behold.so/<YOUR_ID> directly in your browser —
-//      if it returns JSON, the ID is correct. If 404, regenerate the widget.
-//   4. Behold free tier caches feeds; allow a few minutes after connecting.
+// If reels tiles are blank, confirm in the Behold dashboard that the widget
+// has "Include Reels" toggled ON.  Also open the raw feed URL in your browser
+// and check that the reel objects have a non-empty thumbnailUrl field.
 
 const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy"; // ← replace if needed
 
@@ -77,6 +71,7 @@ function MosaicTile({
 }) {
   const T = useT();
   const isEmpty = !post.mediaUrl;
+  const isVideo = post.mediaType === "VIDEO";
 
   return (
     <motion.a
@@ -97,6 +92,7 @@ function MosaicTile({
       }}
     >
       {isEmpty ? (
+        /* Skeleton / placeholder tile */
         <div
           className={`w-full h-full min-h-[120px] animate-pulse ${
             T.isDark ? "bg-white/5" : "bg-black/5"
@@ -113,21 +109,21 @@ function MosaicTile({
           </div>
         </div>
       ) : (
+        /* Actual post thumbnail */
         <img
           src={post.mediaUrl}
           alt={post.caption ?? `Afronated post ${index + 1}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
-          // If the mediaUrl 403s (Instagram CDN token expired), fall back to
-          // the Instagram permalink thumbnail via oEmbed — or just hide the tile.
           onError={(e) => {
+            // Hide broken images gracefully
             const img = e.currentTarget;
-            // Hide the broken image gracefully
             img.style.display = "none";
           }}
         />
       )}
 
+      {/* Hover overlay */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-400 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -143,6 +139,16 @@ function MosaicTile({
         </motion.div>
       </div>
 
+      {/* Video / Reel badge — always visible so users know it's playable */}
+      {isVideo && !isEmpty && (
+        <div className="absolute top-2 right-2 z-10 pointer-events-none">
+          <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+            <Play className="w-3.5 h-3.5 text-white fill-white" />
+          </div>
+        </div>
+      )}
+
+      {/* Red border highlight on hover */}
       <div className="absolute inset-0 border-0 group-hover:border group-hover:border-[#ef4444]/50 transition-all duration-300 pointer-events-none" />
     </motion.a>
   );
@@ -163,16 +169,12 @@ export function InstagramMosaic() {
       return;
     }
 
-    // Behold.so feed endpoint — returns a JSON array of post objects.
-    // No auth required; CORS is allowed from any origin.
     fetch(`https://feeds.behold.so/${BEHOLD_WIDGET_ID}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        // data can be either:
-        //   A) An array of posts directly: [ { id, mediaUrl, ... }, ... ]
-        //   B) A widget object with a posts array: { posts: [...], ... }
+        // Behold returns either an array of posts, or { posts: [...] }
         const raw: Record<string, unknown>[] = Array.isArray(data)
           ? data
           : Array.isArray(data?.posts)
@@ -180,27 +182,51 @@ export function InstagramMosaic() {
           : [];
 
         if (raw.length === 0) {
-          // Widget exists but has no posts yet (still syncing)
           setStatus("error");
           return;
         }
 
         const parsed: InstaPost[] = raw.slice(0, 6).map((p) => {
-          // Behold returns `mediaUrl` for images and `thumbnailUrl` for videos.
-          // Some older widget versions used `prunedTagUrl` or `sizes` objects.
-          const mediaUrl =
-            (p.mediaUrl as string) ||
-            (p.thumbnailUrl as string) ||
-            // Fallback: try the first entry of a `sizes` object if present
-            ((p.sizes as Record<string, string>)?.medium) ||
-            "";
+          const mediaType = (p.mediaType as InstaPost["mediaType"]) || "IMAGE";
+
+          /*
+           * Thumbnail resolution strategy:
+           *
+           * IMAGE / CAROUSEL_ALBUM  → mediaUrl  (the full image)
+           * VIDEO / REEL            → thumbnailUrl  (the poster frame)
+           *                           fall back to mediaUrl if thumbnailUrl absent
+           *
+           * Behold also exposes a `sizes` object on some plans with keys like
+           * "thumbnail", "medium", "large" — we try those too.
+           */
+          const sizes = p.sizes as Record<string, string> | undefined;
+
+          let mediaUrl = "";
+
+          if (mediaType === "VIDEO") {
+            // Prefer thumbnailUrl for video posts (it's the poster frame)
+            mediaUrl =
+              (p.thumbnailUrl as string) ||
+              (p.mediaUrl as string) ||
+              sizes?.medium ||
+              sizes?.thumbnail ||
+              "";
+          } else {
+            // Images / carousels — prefer mediaUrl
+            mediaUrl =
+              (p.mediaUrl as string) ||
+              (p.thumbnailUrl as string) ||
+              sizes?.medium ||
+              sizes?.large ||
+              "";
+          }
 
           return {
             id: String(p.id ?? Math.random()),
             mediaUrl,
             permalink: String(p.permalink ?? "https://www.instagram.com/afro.nated"),
             caption: p.caption ? String(p.caption).slice(0, 120) : undefined,
-            mediaType: (p.mediaType as InstaPost["mediaType"]) || "IMAGE",
+            mediaType,
           };
         });
 
@@ -209,7 +235,6 @@ export function InstagramMosaic() {
       })
       .catch((err) => {
         console.warn("[InstagramMosaic] Could not load Behold feed:", err);
-        // Keep skeleton tiles visible; they link to the IG profile
         setStatus("error");
       });
   }, []);
@@ -226,9 +251,7 @@ export function InstagramMosaic() {
       {/* Section label */}
       <div className="mb-6 flex items-center gap-4">
         <div className="w-6 h-px bg-[#ef4444]" />
-        <span
-          className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}
-        >
+        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
           On Instagram
         </span>
         <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent" />
@@ -259,7 +282,6 @@ export function InstagramMosaic() {
         ))}
       </div>
 
-      {/* Status hint — shown when loaded but could also debug */}
       {status === "error" && (
         <p className={`mt-3 text-center text-[10px] tracking-widest uppercase ${T.textFaint}`}>
           Visit us on Instagram for the latest posts
