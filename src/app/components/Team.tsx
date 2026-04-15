@@ -59,8 +59,8 @@ const teamMembers: TeamMember[] = [
     role: "Content Creator",
     bio: "A creative storyteller and content creator driving student engagement and purposeful community impact.",
     frontImage: "/opemipo-front.png",
-    backImage: "/opemipo-front.png",
-    instagram: "https://www.instagram.com/afro.nated",
+    backImage: "/opemipo-second.png",
+    instagram: "https://www.instagram.com/the_real_ope_",
   },
 ];
 
