@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import { useT } from "../context/ThemeContext";
@@ -16,14 +16,16 @@ interface Article {
 // ─── RSS → JSON fetch ─────────────────────────────────────────────────────────
 
 const MEDIUM_RSS = "https://medium.com/feed/@afro-nated";
-const RSS2JSON   = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(MEDIUM_RSS)}&api_key=&count=10`;
+const RSS2JSON = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(MEDIUM_RSS)}&api_key=&count=10`;
 
 function extractThumbnail(item: Record<string, unknown>): string {
-  // rss2json sometimes puts it in thumbnail, sometimes in content
-  if (item.thumbnail && typeof item.thumbnail === "string" && item.thumbnail.startsWith("http")) {
+  if (
+    item.thumbnail &&
+    typeof item.thumbnail === "string" &&
+    item.thumbnail.startsWith("http")
+  ) {
     return item.thumbnail;
   }
-  // Try to pull first <img> src from content string
   if (typeof item.content === "string") {
     const match = item.content.match(/<img[^>]+src="([^"]+)"/);
     if (match) return match[1];
@@ -34,7 +36,9 @@ function extractThumbnail(item: Record<string, unknown>): string {
 function formatDate(dateStr: string): string {
   try {
     return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   } catch {
     return "";
@@ -42,12 +46,21 @@ function formatDate(dateStr: string): string {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").replace(/&[a-z]+;/gi, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&[a-z]+;/gi, " ")
+    .trim();
 }
 
 // ─── Single Card ──────────────────────────────────────────────────────────────
 
-function ArticleCard({ article, T }: { article: Article; T: ReturnType<typeof useT> }) {
+function ArticleCard({
+  article,
+  T,
+}: {
+  article: Article;
+  T: ReturnType<typeof useT>;
+}) {
   const [imgError, setImgError] = useState(false);
   const excerpt = stripHtml(article.description).slice(0, 100) + "…";
 
@@ -59,14 +72,22 @@ function ArticleCard({ article, T }: { article: Article; T: ReturnType<typeof us
       className="group flex-shrink-0 w-[280px] md:w-[320px] block"
       tabIndex={0}
       aria-label={article.title}
+      // Prevent link navigation while dragging
+      onClick={(e) => {
+        if ((e.currentTarget as HTMLElement).closest("[data-dragging='true']")) {
+          e.preventDefault();
+        }
+      }}
     >
       <div
         className={`
           relative h-full rounded-lg overflow-hidden border transition-all duration-300
           group-hover:border-[#ef4444]/60 group-hover:shadow-[0_0_24px_rgba(239,68,68,0.12)]
-          ${T.isDark
-            ? "bg-[#0d0d0d] border-white/8"
-            : "bg-[#f7f7f7] border-black/8"}
+          ${
+            T.isDark
+              ? "bg-[#0d0d0d] border-white/8"
+              : "bg-[#f7f7f7] border-black/8"
+          }
         `}
       >
         {/* Cover image */}
@@ -79,23 +100,25 @@ function ArticleCard({ article, T }: { article: Article; T: ReturnType<typeof us
               onError={() => setImgError(true)}
             />
           ) : (
-            /* Branded placeholder */
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
               <div className="text-center px-4">
                 <div className="w-8 h-1 bg-[#ef4444] mx-auto mb-3" />
-                <span className={`text-xs font-bold tracking-widest uppercase ${T.textFaint}`}>
+                <span
+                  className={`text-xs font-bold tracking-widest uppercase ${T.textFaint}`}
+                >
                   Afronated
                 </span>
               </div>
             </div>
           )}
-          {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         </div>
 
         {/* Content */}
         <div className="p-5">
-          <p className={`text-[10px] font-bold tracking-widest uppercase mb-2 ${T.textFaint}`}>
+          <p
+            className={`text-[10px] font-bold tracking-widest uppercase mb-2 ${T.textFaint}`}
+          >
             {formatDate(article.pubDate)}
           </p>
 
@@ -110,7 +133,9 @@ function ArticleCard({ article, T }: { article: Article; T: ReturnType<typeof us
             {article.title}
           </h3>
 
-          <p className={`text-xs leading-relaxed line-clamp-2 mb-4 ${T.textFaint}`}>
+          <p
+            className={`text-xs leading-relaxed line-clamp-2 mb-4 ${T.textFaint}`}
+          >
             {excerpt}
           </p>
 
@@ -122,21 +147,25 @@ function ArticleCard({ article, T }: { article: Article; T: ReturnType<typeof us
           </div>
         </div>
 
-        {/* Bottom red accent line — grows on hover */}
+        {/* Bottom red accent line */}
         <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#ef4444] group-hover:w-full transition-all duration-500" />
       </div>
     </a>
   );
 }
 
-// ─── Skeleton card shown while loading ───────────────────────────────────────
+// ─── Skeleton card ────────────────────────────────────────────────────────────
 
 function SkeletonCard({ T }: { T: ReturnType<typeof useT> }) {
   return (
     <div
       className={`
         flex-shrink-0 w-[280px] md:w-[320px] rounded-lg overflow-hidden border
-        ${T.isDark ? "bg-[#0d0d0d] border-white/8" : "bg-[#f7f7f7] border-black/8"}
+        ${
+          T.isDark
+            ? "bg-[#0d0d0d] border-white/8"
+            : "bg-[#f7f7f7] border-black/8"
+        }
       `}
     >
       <div className="w-full h-[160px] bg-white/5 animate-pulse" />
@@ -156,65 +185,247 @@ function SkeletonCard({ T }: { T: ReturnType<typeof useT> }) {
 export function MediumFeed() {
   const T = useT();
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(false);
-  const [paused, setPaused]     = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const trackRef   = useRef<HTMLDivElement>(null);
-  const animRef    = useRef<number | null>(null);
-  const posRef     = useRef(0);
-  const speedRef   = useRef(0.6); // px per frame
+  // Autoscroll state
+  const [autoPaused, setAutoPaused] = useState(false);
+
+  // Refs for the scrollable container (not the inner track)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<number | null>(null);
+  const scrollPosRef = useRef(0); // tracks our virtual scroll position
+  const speedRef = useRef(0.6); // px per frame
+
+  // Drag state
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const scrollStartRef = useRef(0);
+  const hasDraggedRef = useRef(false); // true if moved more than threshold
+  const lastClientXRef = useRef(0);
+  const velocityRef = useRef(0);
+  const momentumRef = useRef<number | null>(null);
 
   // ── Fetch ──
   useEffect(() => {
     let cancelled = false;
     fetch(RSS2JSON)
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (cancelled) return;
         if (data.status === "ok" && Array.isArray(data.items)) {
-          const parsed: Article[] = data.items.slice(0, 8).map((item: Record<string, unknown>) => ({
-            title:       String(item.title ?? ""),
-            link:        String(item.link  ?? ""),
-            pubDate:     String(item.pubDate ?? ""),
-            thumbnail:   extractThumbnail(item),
-            description: String(item.description ?? ""),
-          }));
+          const parsed: Article[] = data.items
+            .slice(0, 8)
+            .map((item: Record<string, unknown>) => ({
+              title: String(item.title ?? ""),
+              link: String(item.link ?? ""),
+              pubDate: String(item.pubDate ?? ""),
+              thumbnail: extractThumbnail(item),
+              description: String(item.description ?? ""),
+            }));
           setArticles(parsed);
         } else {
           setError(true);
         }
         setLoading(false);
       })
-      .catch(() => { if (!cancelled) { setError(true); setLoading(false); } });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // ── Marquee animation ──
+  // ── Autoscroll animation ──
+  // Uses scrollLeft on the container directly (simpler than transform on inner)
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track || articles.length === 0) return;
+    const container = containerRef.current;
+    if (!container || articles.length === 0) return;
 
-    const GAP = 24; // gap between cards in px
+    // Wait a frame for layout
+    const startRaf = requestAnimationFrame(() => {
+      const tick = () => {
+        if (!isDraggingRef.current && !autoPaused) {
+          scrollPosRef.current += speedRef.current;
 
-    const tick = () => {
-      if (!paused) {
-        posRef.current -= speedRef.current;
-        const halfWidth = (track.scrollWidth - GAP) / 2;
-        if (Math.abs(posRef.current) >= halfWidth) posRef.current = 0;
-        track.style.transform = `translateX(${posRef.current}px)`;
-      }
+          // Seamless loop: when we've scrolled past the first "copy",
+          // snap back by exactly half the scrollWidth
+          const halfWidth = container.scrollWidth / 2;
+          if (scrollPosRef.current >= halfWidth) {
+            scrollPosRef.current -= halfWidth;
+          }
+
+          container.scrollLeft = scrollPosRef.current;
+        }
+        animRef.current = requestAnimationFrame(tick);
+      };
       animRef.current = requestAnimationFrame(tick);
+    });
+
+    return () => {
+      cancelAnimationFrame(startRaf);
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
     };
+  }, [articles, autoPaused]);
 
-    animRef.current = requestAnimationFrame(tick);
-    return () => { if (animRef.current !== null) cancelAnimationFrame(animRef.current); };
-  }, [articles, paused]);
+  // ── Sync scrollPosRef when user manually scrolls (keyboard, etc.) ──
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onScroll = () => {
+      if (!isDraggingRef.current) {
+        scrollPosRef.current = container.scrollLeft;
+      }
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
 
-  // ── Don't render anything if there's an error (graceful degradation) ──
+  // ── Momentum helper ──
+  const cancelMomentum = useCallback(() => {
+    if (momentumRef.current !== null) {
+      cancelAnimationFrame(momentumRef.current);
+      momentumRef.current = null;
+    }
+  }, []);
+
+  const applyMomentum = useCallback(() => {
+    cancelMomentum();
+    const container = containerRef.current;
+    if (!container) return;
+
+    let vel = velocityRef.current;
+
+    const step = () => {
+      if (Math.abs(vel) < 0.3) {
+        // Momentum finished — resume autoscroll from current position
+        scrollPosRef.current = container.scrollLeft;
+        setAutoPaused(false);
+        momentumRef.current = null;
+        return;
+      }
+      vel *= 0.92; // friction
+      scrollPosRef.current = container.scrollLeft + vel;
+
+      // Loop
+      const halfWidth = container.scrollWidth / 2;
+      if (scrollPosRef.current >= halfWidth) scrollPosRef.current -= halfWidth;
+      if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
+
+      container.scrollLeft = scrollPosRef.current;
+      momentumRef.current = requestAnimationFrame(step);
+    };
+    momentumRef.current = requestAnimationFrame(step);
+  }, [cancelMomentum]);
+
+  // ── Mouse drag handlers ──
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    cancelMomentum();
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    dragStartXRef.current = e.clientX;
+    lastClientXRef.current = e.clientX;
+    scrollStartRef.current = containerRef.current?.scrollLeft ?? 0;
+    velocityRef.current = 0;
+    setAutoPaused(true);
+    // Prevent text selection while dragging
+    e.preventDefault();
+  }, [cancelMomentum]);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - lastClientXRef.current;
+    lastClientXRef.current = e.clientX;
+    velocityRef.current = -dx; // invert: drag left = scroll right
+
+    const totalDx = e.clientX - dragStartXRef.current;
+    if (Math.abs(totalDx) > 5) hasDraggedRef.current = true;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    scrollPosRef.current = container.scrollLeft - dx;
+
+    // Loop boundaries
+    const halfWidth = container.scrollWidth / 2;
+    if (scrollPosRef.current >= halfWidth) scrollPosRef.current -= halfWidth;
+    if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
+
+    container.scrollLeft = scrollPosRef.current;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    if (hasDraggedRef.current) {
+      applyMomentum();
+    } else {
+      scrollPosRef.current = containerRef.current?.scrollLeft ?? 0;
+      setAutoPaused(false);
+    }
+  }, [applyMomentum]);
+
+  // ── Touch handlers ──
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    cancelMomentum();
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    dragStartXRef.current = e.touches[0].clientX;
+    lastClientXRef.current = e.touches[0].clientX;
+    scrollStartRef.current = containerRef.current?.scrollLeft ?? 0;
+    velocityRef.current = 0;
+    setAutoPaused(true);
+  }, [cancelMomentum]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDraggingRef.current) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - lastClientXRef.current;
+    lastClientXRef.current = touch.clientX;
+    velocityRef.current = -dx;
+
+    const totalDx = touch.clientX - dragStartXRef.current;
+    if (Math.abs(totalDx) > 5) hasDraggedRef.current = true;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    scrollPosRef.current = container.scrollLeft - dx;
+
+    const halfWidth = container.scrollWidth / 2;
+    if (scrollPosRef.current >= halfWidth) scrollPosRef.current -= halfWidth;
+    if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
+
+    container.scrollLeft = scrollPosRef.current;
+    // Prevent page vertical scroll only if clearly horizontal
+    if (Math.abs(dx) > 3) e.preventDefault();
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    if (hasDraggedRef.current) {
+      applyMomentum();
+    } else {
+      scrollPosRef.current = containerRef.current?.scrollLeft ?? 0;
+      setAutoPaused(false);
+    }
+  }, [applyMomentum]);
+
+  // ── Mouse leave (safety net) ──
+  const onMouseLeave = useCallback(() => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      applyMomentum();
+    }
+  }, [applyMomentum]);
+
   if (error) return null;
 
-  // Double the articles so the strip loops seamlessly
   const displayArticles = loading
     ? Array(5).fill(null)
     : [...articles, ...articles];
@@ -226,50 +437,71 @@ export function MediumFeed() {
       viewport={{ once: true }}
       transition={{ duration: 0.7, delay: 0.1 }}
       className="mt-14 -mx-4 md:-mx-8"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
     >
       {/* Section label */}
       <div className="px-4 md:px-8 mb-6 flex items-center gap-4">
         <div className="w-6 h-px bg-[#ef4444]" />
-        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
+        <span
+          className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}
+        >
           From the Blog
         </span>
         <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent" />
       </div>
 
-      {/* Scrolling strip */}
-      <div className="overflow-hidden w-full">
+      {/* Scrollable strip */}
+      <div
+        ref={containerRef}
+        className="overflow-x-scroll w-full"
+        style={{
+          cursor: isDraggingRef.current ? "grabbing" : "grab",
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE/Edge
+          WebkitOverflowScrolling: "touch",
+          userSelect: "none",
+        }}
+        // Suppress scrollbar in webkit
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Hide webkit scrollbar via inline style tag trick */}
+        <style>{`
+          .medium-feed-strip::-webkit-scrollbar { display: none; }
+        `}</style>
         <div
-          ref={trackRef}
-          className="flex gap-6 w-max will-change-transform"
+          className="medium-feed-strip flex gap-6 w-max will-change-transform"
           style={{ paddingLeft: "32px", paddingRight: "32px" }}
         >
           {displayArticles.map((article, i) =>
             loading ? (
               <SkeletonCard key={i} T={T} />
             ) : (
-              <ArticleCard key={`${(article as Article).link}-${i}`} article={article as Article} T={T} />
+              <ArticleCard
+                key={`${(article as Article).link}-${i}`}
+                article={article as Article}
+                T={T}
+              />
             )
           )}
         </div>
       </div>
 
-      {/* Pause indicator */}
-      {paused && articles.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="mt-4 flex justify-center"
-        >
-          <span className={`text-[10px] tracking-widest uppercase ${T.textFaint}`}>
-            — paused —
-          </span>
-        </motion.div>
-      )}
+      {/* Hint label */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+        className="mt-3 flex justify-center"
+      >
+        <span className={`text-[10px] tracking-widest uppercase select-none ${T.textFaint}`}>
+          {autoPaused ? "— dragging —" : "← drag to browse →"}
+        </span>
+      </motion.div>
     </motion.div>
   );
 }

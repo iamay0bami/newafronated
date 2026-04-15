@@ -46,3 +46,8 @@ img {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* Medium feed — hide horizontal scrollbar across all browsers */
+.medium-feed-strip::-webkit-scrollbar {
+  display: none;
+}

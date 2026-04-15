@@ -18,7 +18,7 @@ interface InstaPost {
 // Client needs to sign up at behold.so with their Instagram handle @afro.nated,
 // grab their widget ID, and replace the value below.
 // Free tier gives 9 posts which is perfect for this mosaic.
-const BEHOLD_WIDGET_ID = "YOUR_BEHOLD_WIDGET_ID"; // replace after Behold signup
+const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy"; // replace after Behold signup
 
 // Fallback placeholder tiles shown before live data loads / if no widget ID set
 const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 9 }, (_, i) => ({
