@@ -17,11 +17,12 @@ interface InstaPost {
 // Behold.so is a no-auth Instagram feed service.
 // Client needs to sign up at behold.so with their Instagram handle @afro.nated,
 // grab their widget ID, and replace the value below.
-// Free tier gives 9 posts which is perfect for this mosaic.
-const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy"; // replace after Behold signup
+// Free tier gives 6 posts which is perfect for this mosaic.
+const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy";
 
 // Fallback placeholder tiles shown before live data loads / if no widget ID set
-const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 9 }, (_, i) => ({
+// FIX: Changed length from 9 to 6
+const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
   id: String(i),
   mediaUrl: "",
   permalink: "https://www.instagram.com/afro.nated",
@@ -29,7 +30,7 @@ const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 9 }, (_, i) => ({
   mediaType: "IMAGE",
 }));
 
-// ─── Mosaic layout — 9 tiles in a 3-col asymmetric grid ───────────────────────
+// ─── Mosaic layout — 6 tiles in a 3-col asymmetric grid ───────────────────────
 //
 //  ┌──────────┬────┬────┐
 //  │          │  2 │  3 │
@@ -37,10 +38,6 @@ const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 9 }, (_, i) => ({
 //  │  (tall)  │   4     │
 //  ├────┬─────┴─────────┤
 //  │ 5  │     6         │
-//  ├────┼────┬──────────┤
-//  │    │ 8  │   9      │
-//  │ 7  ├────┴──────────┤
-//  │    │  (end)        │
 //  └────┴───────────────┘
 
 const MOSAIC_LAYOUT = [
@@ -146,13 +143,15 @@ export function InstagramMosaic() {
 
   // Load from Behold widget API if ID is set
   useEffect(() => {
-    if (BEHOLD_WIDGET_ID === "RnYIoNYflGt00tl3LIWy") return;
+    // FIX: Removed the blocker that was specifically stopping your ID from firing
+    if (!BEHOLD_WIDGET_ID) return;
 
     fetch(`https://feeds.behold.so/${BEHOLD_WIDGET_ID}`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          const parsed: InstaPost[] = data.slice(0, 9).map((p: Record<string, string>) => ({
+          // FIX: Changed slice(0, 9) to slice(0, 6)
+          const parsed: InstaPost[] = data.slice(0, 6).map((p: Record<string, string>) => ({
             id: p.id,
             mediaUrl: p.mediaUrl || p.thumbnailUrl || "",
             permalink: p.permalink,
@@ -203,7 +202,8 @@ export function InstagramMosaic() {
         className="grid grid-cols-3 gap-1.5 md:gap-2"
         style={{ gridAutoRows: "clamp(80px, 14vw, 180px)" }}
       >
-        {posts.slice(0, 9).map((post, i) => (
+        {/* FIX: Changed slice(0, 9) to slice(0, 6) */}
+        {posts.slice(0, 6).map((post, i) => (
           <MosaicTile
             key={post.id || i}
             post={post}
