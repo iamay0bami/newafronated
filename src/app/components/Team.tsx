@@ -34,7 +34,7 @@ const teamMembers: TeamMember[] = [
     name: "Onahi Ijeh",
     role: "Founder & Creative Director",
     bio: "A storyteller and curator transforming ideas into resonant visuals and high-impact content rooted in youth culture.",
-    frontImage: "/onahi-event3.png",
+    frontImage: "/onahi-event5.png",
     backImage: "/onahi-party1.png",
     instagram: "https://www.instagram.com/onahiijeh",
   },
