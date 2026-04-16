@@ -5,24 +5,42 @@ import { FaTiktok } from "react-icons/fa";
 import { useT } from "../context/ThemeContext";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-// To update: replace the videoId below with the latest TikTok video ID.
-// Get the ID from the TikTok URL: https://www.tiktok.com/@afronated/video/XXXXXXXXXXXXXXXXXX
-// Just paste the long numeric string as videoId.
+// SociableKit widget ID for @afronated TikTok feed.
+// To update: swap the widget ID in the src URL below.
+const SOCIABLEKIT_WIDGET_ID = "25673144";
+const SOCIABLEKIT_URL = `https://widgets.sociablekit.com/tiktok-feed/iframe/${SOCIABLEKIT_WIDGET_ID}`;
+const TIKTOK_PROFILE_URL = "https://www.tiktok.com/@afronated";
 
-const FEATURED_TIKTOK = {
-  videoId: "7627601060894461204", // ← update to latest video ID from @afronated
-  caption: "Our latest drop — tune in.",
-  profileUrl: "https://www.tiktok.com/@afronated",
-};
+// ─── TikTok icon (same SVG used throughout the codebase) ──────────────────────
+function TikTokIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z" />
+    </svg>
+  );
+}
+
+// ─── Pulsing "live" dot ───────────────────────────────────────────────────────
+function LiveDot() {
+  return (
+    <span className="relative inline-flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-60" />
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ef4444]" />
+    </span>
+  );
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
-
 export function TikTokDrop() {
   const T = useT();
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
-  const embedUrl = `https://www.tiktok.com/embed/v2/${FEATURED_TIKTOK.videoId}`;
+  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
 
   return (
     <section
@@ -33,24 +51,23 @@ export function TikTokDrop() {
           : "bg-gradient-to-b from-white via-[#f8f8f8] to-white"
       }`}
     >
-      {/* Animated spotlight — tracks in from top-right on reveal */}
+      {/* ── Ambient glow ─────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, x: "30%", y: "-40%" }}
         animate={
           isInView
-            ? { opacity: T.isDark ? 0.12 : 0.07, x: "20%", y: "-20%" }
+            ? { opacity: T.isDark ? 0.10 : 0.06, x: "18%", y: "-18%" }
             : { opacity: 0, x: "30%", y: "-40%" }
         }
-        transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
         className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle, #ef4444 0%, transparent 70%)",
-          filter: "blur(60px)",
+          background: "radial-gradient(circle, #ef4444 0%, transparent 70%)",
+          filter: "blur(72px)",
         }}
       />
 
-      {/* Noise texture overlay */}
+      {/* ── Noise texture ────────────────────────────────────────────────── */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.025]"
         style={{
@@ -59,19 +76,22 @@ export function TikTokDrop() {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Header — slides in from left */}
+      <div className="relative z-10 max-w-5xl mx-auto">
+
+        {/* ── Section header ───────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, x: -60 }}
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -60 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="mb-12 md:mb-16"
         >
-          <div className="mb-4">
-            <span className="inline-block px-3 py-1 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded text-[#ef4444] text-xs font-bold tracking-widest uppercase">
-              Latest Drop
-            </span>
-          </div>
+          {/* Red accent bar */}
+          <div className="w-12 h-[3px] bg-[#ef4444] mb-5" />
+
+          <span className="inline-block px-3 py-1 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded text-[#ef4444] text-xs font-bold tracking-widest uppercase mb-5">
+            Latest Drop
+          </span>
+
           <div className="flex items-end gap-4 flex-wrap">
             <h2
               className={`text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-none ${T.text}`}
@@ -82,151 +102,158 @@ export function TikTokDrop() {
               initial={{ width: 0 }}
               animate={isInView ? { width: "80px" } : { width: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="h-[3px] bg-[#ef4444] mb-3 origin-left"
+              className="h-[3px] bg-[#ef4444] mb-2 origin-left"
             />
           </div>
+
           <p className={`mt-4 text-base md:text-lg max-w-md ${T.textMuted}`}>
-            {FEATURED_TIKTOK.caption}
+            African culture, music &amp; storytelling — straight from the feed.
           </p>
         </motion.div>
 
-        {/* Layout: video on left, context panel on right */}
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 lg:gap-16 items-center">
+        {/* ── Live feed label ───────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex items-center gap-4 mb-6"
+        >
+          <div className="w-6 h-px bg-[#ef4444]" />
+          <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
+            @afronated · live feed
+          </span>
+          <LiveDot />
+          <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent" />
+        </motion.div>
 
-          {/* TikTok embed — drops in from below with elastic easing */}
-          <motion.div
-            initial={{ opacity: 0, y: 80, rotateX: 12 }}
-            animate={
-              isInView
-                ? { opacity: 1, y: 0, rotateX: 0 }
-                : { opacity: 0, y: 80, rotateX: 12 }
-            }
-            transition={{
-              duration: 0.9,
-              delay: 0.15,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            style={{ perspective: 1000 }}
-            className="mx-auto lg:mx-0"
+        {/* ── Feed card ─────────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 48 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 48 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className={`rounded-2xl overflow-hidden border transition-colors duration-300 ${
+            T.isDark
+              ? "bg-[#0a0a0a] border-white/8"
+              : "bg-white border-black/8"
+          }`}
+          style={{
+            boxShadow: T.isDark
+              ? "0 0 80px rgba(239,68,68,0.06), 0 32px 64px rgba(0,0,0,0.4)"
+              : "0 32px 64px rgba(0,0,0,0.08)",
+          }}
+        >
+          {/* Card header */}
+          <div
+            className={`flex items-center justify-between px-6 py-4 border-b transition-colors duration-300 ${
+              T.isDark ? "border-white/6" : "border-black/6"
+            }`}
           >
-            <div
-              className="relative overflow-hidden"
-              style={{ width: "325px", height: "576px" }}
-            >
-              {/* Glow frame */}
+            <div className="flex items-center gap-2.5">
               <div
-                className="absolute -inset-[1px] rounded-[18px] pointer-events-none z-10"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(239,68,68,0.5) 0%, transparent 50%, rgba(239,68,68,0.2) 100%)",
-                  padding: "1px",
-                }}
-              />
-              <iframe
-                src={embedUrl}
-                className="w-full h-full rounded-[16px]"
-                allowFullScreen
-                allow="encrypted-media"
-                style={{ border: "none" }}
-                title="Afronated TikTok"
-              />
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  T.isDark ? "bg-white/8" : "bg-black/6"
+                }`}
+              >
+                <FaTiktok className={`w-3.5 h-3.5 ${T.isDark ? "text-white" : "text-black"}`} />
+              </div>
+              <span className={`text-sm font-bold tracking-wide ${T.text}`}>
+                @afronated
+              </span>
             </div>
-          </motion.div>
 
-          {/* Context panel — reveals line by line */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="space-y-8 lg:max-w-sm"
+            <div className="flex items-center gap-2">
+              <LiveDot />
+              <span className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}>
+                Live
+              </span>
+            </div>
+          </div>
+
+          {/* ── SociableKit iframe ─────────────────────────────────────── */}
+          {/*
+            SociableKit renders the full @afronated TikTok feed.
+            The iframe is set to a generous height (600px desktop, 480px mobile)
+            so a grid of videos is visible without scrolling.
+
+            allowtransparency + frameBorder="0" prevent a white box flash on
+            slower connections. scrolling="no" hides the inner scrollbar since
+            the iframe already has internal pagination/infinite scroll.
+          */}
+          <div className="w-full h-[480px] md:h-[600px] overflow-hidden">
+            <iframe
+              src={SOCIABLEKIT_URL}
+              title="Afronated TikTok Feed"
+              className="w-full h-full"
+              style={{ border: "none" }}
+              allowFullScreen
+              allow="encrypted-media; autoplay"
+              // @ts-expect-error — non-standard but widely supported attribute
+              frameBorder="0"
+              scrolling="no"
+              allowTransparency
+            />
+          </div>
+
+          {/* Card footer */}
+          <div
+            className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 py-5 border-t transition-colors duration-300 ${
+              T.isDark ? "border-white/6" : "border-black/6"
+            }`}
           >
-            {/* TikTok profile stat block */}
-            <div className="space-y-6">
-              {[
-                {
-                  label: "Platform",
-                  value: "TikTok",
-                  icon: <FaTiktok className="w-4 h-4" />,
-                  delay: 0.6,
-                },
-                {
-                  label: "Handle",
-                  value: "@afronated",
-                  icon: null,
-                  delay: 0.7,
-                },
-                {
-                  label: "Content",
-                  value: "African culture, music & storytelling",
-                  icon: null,
-                  delay: 0.8,
-                },
-              ].map(({ label, value, icon, delay }) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={
-                    isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }
-                  }
-                  transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-start gap-4"
+            <div className="flex items-center gap-3">
+              {["African culture", "Music", "Storytelling"].map((tag) => (
+                <span
+                  key={tag}
+                  className={`hidden sm:inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border ${
+                    T.isDark
+                      ? "border-white/10 text-white/40"
+                      : "border-black/10 text-black/35"
+                  }`}
                 >
-                  <div
-                    className={`w-px self-stretch min-h-[2rem] ${
-                      T.isDark ? "bg-white/10" : "bg-black/10"
-                    }`}
-                  />
-                  <div>
-                    <p
-                      className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${T.textFaint}`}
-                    >
-                      {label}
-                    </p>
-                    <p
-                      className={`text-sm font-semibold flex items-center gap-2 ${T.text}`}
-                    >
-                      {icon}
-                      {value}
-                    </p>
-                  </div>
-                </motion.div>
+                  {tag}
+                </span>
               ))}
             </div>
 
-            {/* Divider */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
-              transition={{ duration: 0.7, delay: 0.9 }}
-              className={`h-px origin-left ${
-                T.isDark ? "bg-white/10" : "bg-black/10"
-              }`}
-            />
-
-            {/* CTA */}
             <motion.a
-              href={FEATURED_TIKTOK.profileUrl}
+              href={TIKTOK_PROFILE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 16 }}
-              animate={
-                isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }
-              }
-              transition={{ duration: 0.6, delay: 1.0 }}
-              whileHover={{ x: 6 }}
-              className={`group inline-flex items-center gap-3 font-bold tracking-wide hover:text-[#ef4444] transition-colors ${T.text}`}
+              whileHover={{ x: 4 }}
+              className={`group inline-flex items-center gap-2.5 font-bold tracking-wide text-sm hover:text-[#ef4444] transition-colors duration-300 ${T.text}`}
             >
-              <FaTiktok className="w-5 h-5" />
+              <TikTokIcon size={14} />
               FOLLOW ON TIKTOK
-              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </motion.a>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
+
+        {/* ── Decorative stat line ─────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
+          className="mt-8 flex items-center justify-center gap-8"
+        >
+          {[
+            { label: "Platform", value: "TikTok" },
+            { label: "Handle",   value: "@afronated" },
+            { label: "Content",  value: "Culture & Music" },
+          ].map(({ label, value }) => (
+            <div key={label} className="text-center hidden md:block">
+              <p className={`text-[9px] font-bold tracking-[0.2em] uppercase mb-1 ${T.textFaint}`}>
+                {label}
+              </p>
+              <p className={`text-xs font-semibold ${T.textMuted}`}>{value}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
 
       {/* Bottom gradient fade */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
         style={{
           background: T.isDark
             ? "linear-gradient(to top, black, transparent)"
