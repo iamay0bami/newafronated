@@ -1,0 +1,13 @@
+# robots.txt for Afronated
+# Update the domain references below once afronated.com is live
+
+User-agent: *
+Allow: /
+
+# Disallow utility/legal pages from being indexed individually
+# (they will still be accessible but won't clutter search results)
+Disallow: /privacy
+Disallow: /terms
+
+# Point crawlers to the sitemap
+Sitemap: https://afronated.com/sitemap.xml
