@@ -4,49 +4,81 @@ import { useEffect, useRef, useState } from "react";
 
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Attempt autoplay immediately and on first user interaction
+    // Only autoplay on desktop by default to avoid blocking mobile load
+    const isMobile = window.innerWidth < 768;
+
     const tryPlay = () => {
       video.play().catch(() => {
-        // Autoplay blocked — video poster/fallback gradient will show
+        // Autoplay blocked — poster/gradient fallback remains visible
       });
     };
 
-    tryPlay();
+    if (!isMobile) {
+      // Desktop: attempt immediately
+      tryPlay();
+    }
 
+    // On any user interaction (tap, click, scroll) — start the video
     const onInteraction = () => {
       tryPlay();
+      cleanup();
+    };
+
+    const cleanup = () => {
       document.removeEventListener("touchstart", onInteraction);
       document.removeEventListener("click", onInteraction);
+      document.removeEventListener("scroll", onInteraction);
     };
+
     document.addEventListener("touchstart", onInteraction, { passive: true });
     document.addEventListener("click", onInteraction);
+    document.addEventListener("scroll", onInteraction, { passive: true });
 
-    return () => {
-      document.removeEventListener("touchstart", onInteraction);
-      document.removeEventListener("click", onInteraction);
-    };
+    return cleanup;
   }, []);
 
   return (
     <section
       style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
     >
-      {/* ── Video layer ── */}
+      {/* ── Background layer ── */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           zIndex: 0,
-          // Fallback gradient shown while video loads or if it fails
+          // Fallback gradient — always visible until video fades in
           background: "linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)",
         }}
       >
+        {/* Static poster image — shows immediately, zero load cost */}
+        {!videoFailed && (
+          <img
+            src="/hero-poster.jpg"
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center center",
+              // Fade out once video is ready to play
+              opacity: videoReady ? 0 : 1,
+              transition: "opacity 0.8s ease",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+
         {!videoFailed && (
           <video
             ref={videoRef}
@@ -55,65 +87,49 @@ export function Hero() {
             loop
             playsInline
             disablePictureInPicture
-            preload="auto"
+            // metadata: load only enough to know dimensions/duration — fast on mobile
+            // full video streams progressively as it plays
+            preload="metadata"
+            // poster still shown by browser before JS fades it
             poster="/hero-poster.jpg"
+            onCanPlay={() => setVideoReady(true)}
             onError={() => setVideoFailed(true)}
-            /*
-             * Why these exact styles:
-             *
-             * position absolute + inset 0 + width/height 100% — fills the
-             * container completely on every browser including mobile Safari.
-             *
-             * object-fit cover — crops the video to fill the frame regardless
-             * of its source aspect ratio.  If the client shot the video in
-             * portrait (9:16 on iPhone), this will zoom/crop it to fill a
-             * landscape 16:9 frame.  That is the correct behaviour for a hero
-             * background — there is no CSS-only way to "make a portrait video
-             * fill landscape without cropping" because pixels have to come from
-             * somewhere.  See the note below the component for what to tell the
-             * client if they want a non-cropped result.
-             *
-             * object-position center center — crops symmetrically so the
-             * subject stays centred.  If the subject is off-centre in the
-             * source video, the client should re-export with the subject
-             * centred, or you can change this to e.g. "center 20%" to bias
-             * toward the top.
-             *
-             * min-width / min-height 100% with width / height auto — classic
-             * "cover" trick that predates object-fit and acts as an extra
-             * safety net on very old WebViews.
-             */
             style={{
               position: "absolute",
               top: "50%",
               left: "50%",
-              // Translate back so the centre of the video aligns with the
-              // centre of the container.
               transform: "translate(-50%, -50%)",
-              // These two lines implement "cover" for browsers that don't
-              // honour object-fit on <video> (old Android WebViews).
               minWidth: "100%",
               minHeight: "100%",
-              // On modern browsers object-fit handles everything.
               width: "100%",
               height: "100%",
               objectFit: "cover",
               objectPosition: "center center",
-              // Prevent any intrinsic size from leaking through.
               display: "block",
+              // Fade in once buffered enough to play
+              opacity: videoReady ? 1 : 0,
+              transition: "opacity 0.8s ease",
             }}
           >
+            {/*
+              Serve a smaller/faster WebM first (if you have one), then MP4 as fallback.
+              If you only have MP4 that's fine — just keep the single source below.
+              To create a WebM version: use HandBrake or ffmpeg:
+                ffmpeg -i hero-reel.mp4 -c:v libvpx-vp9 -crf 33 -b:v 0 -vf scale=1280:-2 hero-reel.webm
+            */}
+            {/* <source src="/hero-reel.webm" type="video/webm" /> */}
             <source src="/hero-reel.mp4" type="video/mp4" />
           </video>
         )}
 
-        {/* Dark overlay — ensures text is always legible over any video frame */}
+        {/* Dark overlay — always on top of video */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
               "linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.85) 100%)",
+            zIndex: 1,
           }}
         />
       </div>
