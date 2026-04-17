@@ -50,8 +50,8 @@ const teamMembers: TeamMember[] = [
     name: "Veronica Emmanuel",
     role: "Content Writer",
     bio: "Dedicated Content Writer crafting simple, engaging messaging for clear brand communication and social media growth.",
-    frontImage: "/veronica-front.png",
-    backImage: "/veronica-back.png",
+    frontImage: "/veronica-back.png",
+    backImage: "/veronica-front.png",
     instagram: "https://www.instagram.com/verah_skill_guild/",
   },
   {
@@ -167,7 +167,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                 </div>
               </div>
             </div>
-          </div>
+           </div>
         </div>
       </motion.div>
     </motion.div>
