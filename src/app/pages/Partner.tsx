@@ -37,7 +37,14 @@ export function Partner() {
   const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${T.isDark ? "border-white/20 text-white placeholder:text-white/30" : "border-black/20 text-black placeholder:text-black/30"}`;
   const labelCls = `block text-xs font-medium tracking-wider uppercase mb-2 ${T.textFaint}`;
   const selectArrowColor = T.isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.4)";
-  const selectStyle = { backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(selectArrowColor)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0 center", backgroundSize: "24px", paddingRight: "32px", colorScheme: T.isDark ? "dark" as const : "light" as const };
+  const selectStyle = {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(selectArrowColor)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 0 center",
+    backgroundSize: "24px",
+    paddingRight: "32px",
+    colorScheme: T.isDark ? "dark" as const : "light" as const,
+  };
 
   const cardCls = `border p-8 hover:border-[#ef4444]/40 transition-colors ${T.isDark ? "border-white/10" : "border-black/10"}`;
 
@@ -93,16 +100,70 @@ export function Partner() {
                 <button onClick={() => setStatus("idle")} className="mt-4 text-[#ef4444] hover:text-[#ef4444]/80 transition-colors text-sm font-medium tracking-wide uppercase">Send Another</button>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {[{id:"name",label:"Name *",type:"text",required:true,ph:"Your name"},{id:"email",label:"Email *",type:"email",required:true,ph:"you@company.com"},{id:"organization",label:"Organization",type:"text",required:false,ph:"Brand / Company"}].map(f => (
-                  <div key={f.id}>
-                    <label htmlFor={f.id} className={labelCls}>{f.label}</label>
-                    <input type={f.type} id={f.id} name={f.id} required={f.required} value={formData[f.id as keyof typeof formData]} onChange={handleChange} placeholder={f.ph} className={inputCls}/>
-                  </div>
-                ))}
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                {/* Name */}
                 <div>
-                  <label htmlFor="type" className={labelCls}>Type *</label>
-                  <select id="type" name="type" required value={formData.type} onChange={handleChange} className={inputCls + " appearance-none cursor-pointer"} style={selectStyle}>
+                  <label htmlFor="partner-name" className={labelCls}>Name *</label>
+                  <input
+                    type="text"
+                    id="partner-name"
+                    name="name"
+                    required
+                    autoComplete="name"
+                    inputMode="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your name"
+                    className={inputCls}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="partner-email" className={labelCls}>Email *</label>
+                  <input
+                    type="email"
+                    id="partner-email"
+                    name="email"
+                    required
+                    autoComplete="email"
+                    inputMode="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="you@company.com"
+                    className={inputCls}
+                  />
+                </div>
+
+                {/* Organization */}
+                <div>
+                  <label htmlFor="partner-organization" className={labelCls}>Organization</label>
+                  <input
+                    type="text"
+                    id="partner-organization"
+                    name="organization"
+                    autoComplete="organization"
+                    inputMode="text"
+                    value={formData.organization}
+                    onChange={handleChange}
+                    placeholder="Brand / Company"
+                    className={inputCls}
+                  />
+                </div>
+
+                {/* Type */}
+                <div>
+                  <label htmlFor="partner-type" className={labelCls}>Type *</label>
+                  <select
+                    id="partner-type"
+                    name="type"
+                    required
+                    autoComplete="off"
+                    value={formData.type}
+                    onChange={handleChange}
+                    className={inputCls + " appearance-none cursor-pointer"}
+                    style={selectStyle}
+                  >
                     <option value="">Select...</option>
                     <option value="sponsorship">Sponsorship</option>
                     <option value="brand-partnership">Brand Partnership</option>
@@ -111,13 +172,34 @@ export function Partner() {
                     <option value="other">Other</option>
                   </select>
                 </div>
+
+                {/* Message */}
                 <div>
-                  <label htmlFor="message" className={labelCls}>Message *</label>
-                  <textarea id="message" name="message" required value={formData.message} onChange={handleChange} placeholder="Tell us about your brand and how you'd like to work together..." rows={6} className={inputCls + " resize-none"}/>
+                  <label htmlFor="partner-message" className={labelCls}>Message *</label>
+                  <textarea
+                    id="partner-message"
+                    name="message"
+                    required
+                    autoComplete="off"
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="Tell us about your brand and how you'd like to work together..."
+                    rows={6}
+                    className={inputCls + " resize-none"}
+                  />
                 </div>
-                {status === "error" && <p className="text-[#ef4444] text-sm">Something went wrong. Please try again or email us directly.</p>}
-                <motion.button type="submit" disabled={status === "sending"} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  className="w-full md:w-auto px-12 py-4 bg-[#ef4444] text-white hover:bg-white hover:text-black transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed">
+
+                {status === "error" && (
+                  <p className="text-[#ef4444] text-sm">Something went wrong. Please try again or email us directly.</p>
+                )}
+
+                <motion.button
+                  type="submit"
+                  disabled={status === "sending"}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto px-12 py-4 bg-[#ef4444] text-white hover:bg-white hover:text-black transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                >
                   {status === "sending" ? "Sending..." : "Send Inquiry"}
                 </motion.button>
               </form>
