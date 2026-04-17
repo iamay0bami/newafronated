@@ -2,18 +2,56 @@ import { motion } from "motion/react";
 import { Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+// ─── YouTube thumbnail sizes ───────────────────────────────────────────────────
+// maxresdefault (1280×720) — best quality, sometimes missing for older videos
+// sddefault     (640×480)  — reliable fallback
+// hqdefault     (480×360)  — always present
+const YT_ID = "YnsnAwQaZhM";
+const THUMB_MAXRES = `https://img.youtube.com/vi/${YT_ID}/maxresdefault.jpg`;
+const THUMB_SD     = `https://img.youtube.com/vi/${YT_ID}/sddefault.jpg`;
+const THUMB_HQ     = `https://img.youtube.com/vi/${YT_ID}/hqdefault.jpg`;
+
+/**
+ * useIsMobile
+ *
+ * Returns true on devices narrower than 1024 px (phones + tablets).
+ * We only show the thumbnail-first strategy on mobile/tablet because
+ * desktop connections load the video quickly enough that the poster
+ * attribute is sufficient.
+ *
+ * We use 1024 px (lg breakpoint) rather than 768 px so that iPads in
+ * landscape are also covered.
+ */
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const onChange = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return mobile;
+}
+
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoFailed, setVideoFailed] = useState(false);
+  const [videoFailed, setVideoFailed]   = useState(false);
+  // videoReady = true once the video has enough data to play smoothly
+  const [videoReady, setVideoReady]     = useState(false);
+  // thumbSrc — start with the highest-res thumbnail, fall back if it 404s
+  const [thumbSrc, setThumbSrc]         = useState(THUMB_MAXRES);
+
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Attempt autoplay immediately and on first user interaction
     const tryPlay = () => {
       video.play().catch(() => {
-        // Autoplay blocked — video poster/fallback gradient will show
+        // Autoplay blocked — video poster / thumbnail fallback will show
       });
     };
 
@@ -22,32 +60,113 @@ export function Hero() {
     const onInteraction = () => {
       tryPlay();
       document.removeEventListener("touchstart", onInteraction);
-      document.removeEventListener("click", onInteraction);
+      document.removeEventListener("click",      onInteraction);
     };
     document.addEventListener("touchstart", onInteraction, { passive: true });
-    document.addEventListener("click", onInteraction);
+    document.addEventListener("click",      onInteraction);
 
     return () => {
       document.removeEventListener("touchstart", onInteraction);
-      document.removeEventListener("click", onInteraction);
+      document.removeEventListener("click",      onInteraction);
     };
   }, []);
+
+  /**
+   * Handle YouTube thumbnail 404s.
+   * maxresdefault is sometimes missing → fall back to sddefault → hqdefault.
+   */
+  const handleThumbError = () => {
+    if (thumbSrc === THUMB_MAXRES) setThumbSrc(THUMB_SD);
+    else if (thumbSrc === THUMB_SD) setThumbSrc(THUMB_HQ);
+    // hqdefault always exists — no further fallback needed
+  };
+
+  /**
+   * Called when the video has buffered enough to start smooth playback.
+   * We use `canplaythrough` (fires once) so the crossfade only happens
+   * once the browser is confident it can play without stalling.
+   *
+   * On desktop (isMobile === false) we skip this entirely and just let
+   * the video play normally with the standard poster attribute.
+   */
+  const handleCanPlayThrough = () => {
+    if (isMobile) setVideoReady(true);
+  };
 
   return (
     <section
       style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
     >
-      {/* ── Video layer ── */}
+      {/* ─────────────────────────────────────────────────────────────────────
+          Layer stack (back to front):
+          1. Gradient fallback          — always present, lowest layer
+          2. YouTube thumbnail          — visible immediately on mobile, fades
+                                          out once the video is ready
+          3. Video element              — fades in once canplaythrough fires
+          4. Dark overlay               — always on top of media, below content
+          5. Hero content
+      ───────────────────────────────────────────────────────────────────── */}
+
+      {/* ── 1. Gradient fallback (base layer) ── */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           zIndex: 0,
-          // Fallback gradient shown while video loads or if it fails
           background: "linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)",
         }}
-      >
-        {!videoFailed && (
+      />
+
+      {/* ── 2. YouTube thumbnail — mobile only ── */}
+      {isMobile && !videoFailed && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            // Fade out once the video is loaded and ready to play.
+            // Using a CSS transition here instead of Framer Motion keeps this
+            // layer lightweight — it's essentially an <img> wrapper.
+            opacity: videoReady ? 0 : 1,
+            transition: "opacity 0.8s ease",
+            pointerEvents: "none",
+          }}
+        >
+          <img
+            src={thumbSrc}
+            alt=""
+            aria-hidden="true"
+            onError={handleThumbError}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              minWidth: "100%",
+              minHeight: "100%",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center center",
+              display: "block",
+            }}
+          />
+        </div>
+      )}
+
+      {/* ── 3. Video element ── */}
+      {!videoFailed && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 2,
+            // On mobile the video fades IN once ready (starts invisible).
+            // On desktop it's always visible (opacity 1) — same as before.
+            opacity: isMobile ? (videoReady ? 1 : 0) : 1,
+            transition: isMobile ? "opacity 0.8s ease" : "none",
+          }}
+        >
           <video
             ref={videoRef}
             autoPlay
@@ -56,69 +175,43 @@ export function Hero() {
             playsInline
             disablePictureInPicture
             preload="auto"
+            // poster is still set as a belt-and-suspenders fallback for
+            // desktop and for the brief instant before our thumbnail renders.
             poster="/hero-poster.jpg"
             onError={() => setVideoFailed(true)}
-            /*
-             * Why these exact styles:
-             *
-             * position absolute + inset 0 + width/height 100% — fills the
-             * container completely on every browser including mobile Safari.
-             *
-             * object-fit cover — crops the video to fill the frame regardless
-             * of its source aspect ratio.  If the client shot the video in
-             * portrait (9:16 on iPhone), this will zoom/crop it to fill a
-             * landscape 16:9 frame.  That is the correct behaviour for a hero
-             * background — there is no CSS-only way to "make a portrait video
-             * fill landscape without cropping" because pixels have to come from
-             * somewhere.  See the note below the component for what to tell the
-             * client if they want a non-cropped result.
-             *
-             * object-position center center — crops symmetrically so the
-             * subject stays centred.  If the subject is off-centre in the
-             * source video, the client should re-export with the subject
-             * centred, or you can change this to e.g. "center 20%" to bias
-             * toward the top.
-             *
-             * min-width / min-height 100% with width / height auto — classic
-             * "cover" trick that predates object-fit and acts as an extra
-             * safety net on very old WebViews.
-             */
+            onCanPlayThrough={handleCanPlayThrough}
             style={{
               position: "absolute",
               top: "50%",
               left: "50%",
-              // Translate back so the centre of the video aligns with the
-              // centre of the container.
               transform: "translate(-50%, -50%)",
-              // These two lines implement "cover" for browsers that don't
-              // honour object-fit on <video> (old Android WebViews).
               minWidth: "100%",
               minHeight: "100%",
-              // On modern browsers object-fit handles everything.
               width: "100%",
               height: "100%",
               objectFit: "cover",
               objectPosition: "center center",
-              // Prevent any intrinsic size from leaking through.
               display: "block",
             }}
           >
             <source src="/hero-reel.mp4" type="video/mp4" />
           </video>
-        )}
+        </div>
+      )}
 
-        {/* Dark overlay — ensures text is always legible over any video frame */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.85) 100%)",
-          }}
-        />
-      </div>
+      {/* ── 4. Dark overlay — always above the media layers ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 3,
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.85) 100%)",
+          pointerEvents: "none",
+        }}
+      />
 
-      {/* ── Hero content ── */}
+      {/* ── 5. Hero content ── */}
       <div
         style={{
           position: "relative",
