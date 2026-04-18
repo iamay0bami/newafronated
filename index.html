@@ -3,26 +3,14 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- Primary favicon — use logo-transparent.png (already in codebase) -->
-    <!-- It has mix-blend-mode tricks in AfronatedLogo.tsx so it IS the right file -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/logo-transparent.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/logo-transparent.png" />
-
-    <!-- Apple touch icon (home screen bookmark on iPhone/iPad) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/logo-transparent.png" />
-
-    <!-- Optional: if you generate a proper .ico via favicon.io, add this too -->
-    <!-- <link rel="shortcut icon" href="/favicon.ico" /> -->
-
-    <!-- Web app manifest (Android "Add to Home Screen" + PWA) -->
-    <!-- Create /public/site.webmanifest with the content shown at the bottom of this file -->
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- ═══════════════════════════════════════════════════════════
-         PRIMARY META TAGS
-    ═══════════════════════════════════════════════════════════ -->
     <title>Afronated — African Creative Media Collective</title>
     <meta name="title" content="Afronated — African Creative Media Collective" />
     <meta
@@ -34,56 +22,34 @@
       content="Afronated, African media, African storytelling, African creatives, African culture, African music, African interviews, creative collective, African content creators, Afro culture"
     />
     <meta name="author" content="Afronated" />
-
-    <!--
-      robots: previously you had "index, follow" — that is correct.
-      Added "max-snippet:-1" and "max-image-preview:large" so Google
-      can show a rich preview snippet (longer description + big image)
-      in search results instead of truncating to 160 chars.
-    -->
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="language" content="English" />
     <meta name="revisit-after" content="7 days" />
 
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://afronated.com/" />
 
-    <!-- ═══════════════════════════════════════════════════════════
-         OPEN GRAPH (Facebook, WhatsApp, LinkedIn previews)
-         og:image is the SINGLE BIGGEST SEO visual signal missing:
-         create a 1200×630px image (your logo on a black background)
-         save it as /public/og-image.jpg and deploy it.
-         Until then link-previews will show nothing.
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://afronated.com/" />
     <meta property="og:site_name" content="Afronated" />
     <meta property="og:title" content="Afronated — African Creative Media Collective" />
-    <meta
-      property="og:description"
-      content="Amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence."
-    />
+    <meta property="og:description" content="Amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence." />
     <meta property="og:image" content="https://afronated.com/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Afronated — African Creative Media Collective" />
     <meta property="og:locale" content="en_GB" />
 
-    <!-- ═══════════════════════════════════════════════════════════
-         TWITTER / X CARD
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@AfroNated" />
     <meta name="twitter:creator" content="@AfroNated" />
     <meta name="twitter:url" content="https://afronated.com/" />
     <meta name="twitter:title" content="Afronated — African Creative Media Collective" />
-    <meta
-      name="twitter:description"
-      content="Amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence."
-    />
+    <meta name="twitter:description" content="Amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence." />
     <meta name="twitter:image" content="https://afronated.com/og-image.jpg" />
 
-    
+    <!-- Organisation schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -93,21 +59,14 @@
       "url": "https://afronated.com",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://afronated.com/logo-transparent.png",
+        "url": "https://afronated.com/favicon-512.png",
         "width": 512,
         "height": 512
       },
       "image": "https://afronated.com/og-image.jpg",
       "description": "Afronated is a creative media collective amplifying African voices through powerful storytelling, spotlight interviews, innovative media, and cultural excellence.",
       "foundingDate": "2024",
-      "knowsAbout": [
-        "African Culture",
-        "Creative Media",
-        "Storytelling",
-        "African Music",
-        "Documentary Filmmaking",
-        "African Content Creation"
-      ],
+      "knowsAbout": ["African Culture","Creative Media","Storytelling","African Music","Documentary Filmmaking","African Content Creation"],
       "sameAs": [
         "https://www.youtube.com/@Afronated",
         "https://www.instagram.com/afro.nated",
@@ -123,10 +82,7 @@
     }
     </script>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         WEBSITE schema — enables Google Sitelinks search box
-         and confirms the canonical home URL
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- WebSite schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -145,10 +101,7 @@
     }
     </script>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         BREADCRUMB schema (helps Google show site structure in
-         search results — adds the site name next to the URL)
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- BreadcrumbList -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -164,14 +117,12 @@
     }
     </script>
 
-    <!-- Theme colour — matches brand red -->
     <meta name="theme-color" content="#ef4444" />
     <meta name="msapplication-TileColor" content="#000000" />
-    <meta name="msapplication-TileImage" content="/logo-transparent.png" />
+    <meta name="msapplication-TileImage" content="/favicon-192.png" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
