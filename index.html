@@ -2,16 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <!-- Primary favicon — use logo-transparent.png (already in codebase) -->
+    <!-- It has mix-blend-mode tricks in AfronatedLogo.tsx so it IS the right file -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo-transparent.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo-transparent.png" />
+
+    <!-- Apple touch icon (home screen bookmark on iPhone/iPad) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-transparent.png" />
+
+    <!-- Optional: if you generate a proper .ico via favicon.io, add this too -->
+    <!-- <link rel="shortcut icon" href="/favicon.ico" /> -->
+
+    <!-- Web app manifest (Android "Add to Home Screen" + PWA) -->
+    <!-- Create /public/site.webmanifest with the content shown at the bottom of this file -->
+    <link rel="manifest" href="/site.webmanifest" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- ═══════════════════════════════════════════════════════════
          PRIMARY META TAGS
-         Update the content="https://afronated.com" lines once
-         the custom domain is live. Until then leave as-is or use
-         your .vercel.app URL.
     ═══════════════════════════════════════════════════════════ -->
     <title>Afronated — African Creative Media Collective</title>
     <meta name="title" content="Afronated — African Creative Media Collective" />
@@ -24,14 +34,26 @@
       content="Afronated, African media, African storytelling, African creatives, African culture, African music, African interviews, creative collective, African content creators, Afro culture"
     />
     <meta name="author" content="Afronated" />
-    <meta name="robots" content="index, follow" />
-    <meta name="language" content="English" />
 
-    <!-- Canonical URL — MUST be updated to https://afronated.com once domain is live -->
+    <!--
+      robots: previously you had "index, follow" — that is correct.
+      Added "max-snippet:-1" and "max-image-preview:large" so Google
+      can show a rich preview snippet (longer description + big image)
+      in search results instead of truncating to 160 chars.
+    -->
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+
+    <!-- Canonical URL -->
     <link rel="canonical" href="https://afronated.com/" />
 
     <!-- ═══════════════════════════════════════════════════════════
          OPEN GRAPH (Facebook, WhatsApp, LinkedIn previews)
+         og:image is the SINGLE BIGGEST SEO visual signal missing:
+         create a 1200×630px image (your logo on a black background)
+         save it as /public/og-image.jpg and deploy it.
+         Until then link-previews will show nothing.
     ═══════════════════════════════════════════════════════════ -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://afronated.com/" />
@@ -41,11 +63,6 @@
       property="og:description"
       content="Amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence."
     />
-    <!--
-      og:image — Create a 1200×630px image (your logo on dark background works great).
-      Save it as /public/og-image.jpg and it will be served at /og-image.jpg.
-      Recommended: bold AFRONATED wordmark centred on black, red accent line.
-    -->
     <meta property="og:image" content="https://afronated.com/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -66,24 +83,31 @@
     />
     <meta name="twitter:image" content="https://afronated.com/og-image.jpg" />
 
-    <!-- ═══════════════════════════════════════════════════════════
-         STRUCTURED DATA — JSON-LD (Organisation schema)
-         This is what Google uses for Knowledge Panel entries and
-         rich results. It's the single biggest lever for brand
-         name recognition in search.
-    ═══════════════════════════════════════════════════════════ -->
+    
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Afronated",
-      "alternateName": ["Afro-Nated", "Afronated Media"],
+      "alternateName": ["Afro-Nated", "Afronated Media", "AfroNated"],
       "url": "https://afronated.com",
-      "logo": "https://afronated.com/logo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://afronated.com/logo-transparent.png",
+        "width": 512,
+        "height": 512
+      },
       "image": "https://afronated.com/og-image.jpg",
       "description": "Afronated is a creative media collective amplifying African voices through powerful storytelling, spotlight interviews, innovative media, and cultural excellence.",
       "foundingDate": "2024",
-      "knowsAbout": ["African Culture", "Creative Media", "Storytelling", "African Music", "Documentary Filmmaking"],
+      "knowsAbout": [
+        "African Culture",
+        "Creative Media",
+        "Storytelling",
+        "African Music",
+        "Documentary Filmmaking",
+        "African Content Creation"
+      ],
       "sameAs": [
         "https://www.youtube.com/@Afronated",
         "https://www.instagram.com/afro.nated",
@@ -101,12 +125,14 @@
 
     <!-- ═══════════════════════════════════════════════════════════
          WEBSITE schema — enables Google Sitelinks search box
+         and confirms the canonical home URL
     ═══════════════════════════════════════════════════════════ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Afronated",
+      "alternateName": "Afronated — African Creative Media Collective",
       "url": "https://afronated.com",
       "potentialAction": {
         "@type": "SearchAction",
@@ -119,12 +145,33 @@
     }
     </script>
 
-    <!-- Theme colour — matches brand red, shown in mobile Chrome address bar -->
+    <!-- ═══════════════════════════════════════════════════════════
+         BREADCRUMB schema (helps Google show site structure in
+         search results — adds the site name next to the URL)
+    ═══════════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://afronated.com/"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Theme colour — matches brand red -->
     <meta name="theme-color" content="#ef4444" />
     <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="msapplication-TileImage" content="/logo-transparent.png" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
