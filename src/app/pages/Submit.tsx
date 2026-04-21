@@ -38,13 +38,15 @@ export function Submit() {
   const labelCls = `block text-xs font-medium tracking-wider uppercase mb-2 ${T.textFaint}`;
 
   const selectArrowColor = T.isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.4)";
-  const selectStyle = {
+  const selectStyle: React.CSSProperties = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(selectArrowColor)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 0 center",
     backgroundSize: "24px",
     paddingRight: "32px",
-    colorScheme: T.isDark ? "dark" as const : "light" as const,
+    colorScheme: T.isDark ? "dark" : "light",
+    backgroundColor: T.isDark ? "#0a0a0a" : "#ffffff",
+    color: T.isDark ? "#ffffff" : "#000000",
   };
 
   return (
