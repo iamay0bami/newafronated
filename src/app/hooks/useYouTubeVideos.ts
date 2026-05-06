@@ -8,6 +8,16 @@ const YT_API_KEY = "AIzaSyAixuU0sg_TtnQvDrwkMKRnyFtFmWoTcGI";
 // Hardcoded channel ID for @Afronated — verified from youtube.com/@Afronated
 const YT_CHANNEL_ID = "UCy6712z38Ovxm4gsf_yN1Rg";
 
+// ─── Short detection threshold ────────────────────────────────────────────────
+// YouTube's own Shorts shelf only shows videos ≤60 seconds.
+// We use 62s as a small buffer for edge cases.
+// Videos > 62 seconds are treated as long-form / interviews.
+// We deliberately do NOT check #shorts in title/description because:
+//   1. Creators sometimes tag long videos with #shorts accidentally
+//   2. YouTube's own categorisation is purely duration-based for the Shorts shelf
+//   3. The brand's long-form interviews are all well over 5 minutes
+const SHORTS_MAX_SECONDS = 62;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface YTVideo {
@@ -34,15 +44,25 @@ function parseISO8601(duration: string): number {
   return h * 3600 + m * 60 + s;
 }
 
-function detectShort(
-  title: string,
-  description: string,
-  durationSeconds: number
-): boolean {
-  const lower = (title + " " + description).toLowerCase();
-  if (lower.includes("#shorts") || lower.includes("#short")) return true;
-  if (durationSeconds > 0 && durationSeconds <= 62) return true;
-  return false;
+/**
+ * Determine if a video is a YouTube Short.
+ *
+ * Strategy: duration ONLY.
+ *
+ * YouTube Shorts are defined by the platform as videos ≤60 seconds uploaded
+ * to the Shorts creation flow. The YouTube Data API does not expose a direct
+ * "isShort" boolean, but duration is the most reliable proxy because:
+ *
+ *   - All Afronated interviews run 5–30+ minutes (well above the threshold)
+ *   - All Afronated Shorts are genuine short clips (≤60s)
+ *   - Hashtag checks are unreliable (creators misuse #shorts on long videos)
+ *
+ * If a video is exactly 0 seconds (duration parse failure) we treat it as
+ * long-form to avoid incorrectly filtering out a video.
+ */
+function isYouTubeShort(durationSeconds: number): boolean {
+  if (durationSeconds === 0) return false; // parse failure — treat as long-form
+  return durationSeconds <= SHORTS_MAX_SECONDS;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -80,13 +100,13 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           channelData?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? "";
         if (!uploadsPlaylist) throw new Error("Uploads playlist not found");
 
-        // Step 2: Get latest 25 video IDs
+        // Step 2: Get latest 50 video IDs (more headroom for filtering)
         const playlistUrl = new URL(
           "https://www.googleapis.com/youtube/v3/playlistItems"
         );
         playlistUrl.searchParams.set("part", "contentDetails");
         playlistUrl.searchParams.set("playlistId", uploadsPlaylist);
-        playlistUrl.searchParams.set("maxResults", "25");
+        playlistUrl.searchParams.set("maxResults", "50");
         playlistUrl.searchParams.set("key", YT_API_KEY);
 
         const playlistRes = await fetch(playlistUrl.toString());
@@ -139,10 +159,12 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
             durationSeconds,
             publishedAt: String(snippet?.publishedAt ?? ""),
             viewCount: String(statistics?.viewCount ?? ""),
-            isShort: detectShort(title, description, durationSeconds),
+            // Duration-only detection — no hashtag guessing
+            isShort: isYouTubeShort(durationSeconds),
           };
         });
 
+        // Shorts: duration ≤ 62 seconds, up to 8 shown
         const newShorts: YTShort[] = allVideos
           .filter((v) => v.isShort)
           .slice(0, 8)
@@ -154,7 +176,11 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
             viewCount: v.viewCount,
           }));
 
-        const newLongForm: YTVideo[] = allVideos.filter((v) => !v.isShort).slice(0, 8);
+        // Long-form: duration > 62 seconds (interviews, documentaries, etc.)
+        // Show up to 6 — newest first (API returns newest first from uploads playlist)
+        const newLongForm: YTVideo[] = allVideos
+          .filter((v) => !v.isShort)
+          .slice(0, 6);
 
         setShorts(newShorts);
         setLongForm(newLongForm);

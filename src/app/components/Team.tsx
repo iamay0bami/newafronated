@@ -1,5 +1,5 @@
 import { motion, useSpring, useMotionValue, AnimatePresence } from "motion/react";
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Instagram } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 
@@ -61,7 +61,7 @@ const teamMembers: TeamMember[] = [
   },
 ];
 
-// ─── Signal Card ─────────────────────────────────────────────────────────────
+// ─── Signal Card ──────────────────────────────────────────────────────────────
 
 function SignalCard({
   member,
@@ -83,26 +83,6 @@ function SignalCard({
   const [hovered, setHovered] = useState(false);
   const [bioOpen, setBioOpen] = useState(false);
   const [glitching, setGlitching] = useState(false);
-
-  // Periodic scan line
-  const [scanActive, setScanActive] = useState(false);
-
-  // Scan line ping every ~5–8s (staggered per card)
-  useEffect(() => {
-    const delay = index * 1200 + 4000;
-    let interval: ReturnType<typeof setInterval>;
-    const timeout = setTimeout(() => {
-      setScanActive(true);
-      interval = setInterval(() => {
-        setScanActive(false);
-        setTimeout(() => setScanActive(true), 100);
-      }, 6000 + index * 700);
-    }, delay);
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(interval);
-    };
-  }, [index]);
 
   // Glitch on hover enter
   const triggerGlitch = useCallback(() => {
@@ -183,7 +163,6 @@ function SignalCard({
           }}
           animate={{ opacity: hovered ? 1 : 0 }}
           transition={{ duration: 0.3 }}
-          // Re-render on spring changes
           ref={(el) => {
             if (!el) return;
             const unsub1 = springSpotX.on("change", (v) => {
@@ -200,25 +179,6 @@ function SignalCard({
 
         {/* ── Base gradient (always) ── */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/10 z-20" />
-
-        {/* ── Scan line ── */}
-        <AnimatePresence>
-          {scanActive && (
-            <motion.div
-              key="scan"
-              className="absolute left-0 right-0 h-[2px] pointer-events-none z-30"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(239,68,68,0.7) 30%, rgba(239,68,68,0.9) 50%, rgba(239,68,68,0.7) 70%, transparent)",
-                boxShadow: "0 0 8px rgba(239,68,68,0.6)",
-              }}
-              initial={{ top: "0%", opacity: 0 }}
-              animate={{ top: "100%", opacity: [0, 1, 1, 0] }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.4, ease: "linear" }}
-            />
-          )}
-        </AnimatePresence>
 
         {/* ── Red corner accents ── */}
         <div className="absolute top-3 left-3 z-30 pointer-events-none">
@@ -310,7 +270,7 @@ function SignalCard({
                 exit={{ y: 20, opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* "Behind the signal" badge */}
+                {/* "Signal Live" badge */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
