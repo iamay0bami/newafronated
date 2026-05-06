@@ -2,21 +2,39 @@ import { useEffect, useState } from "react";
 import type { YTShort } from "../components/YouTubeShorts";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-// YouTube Data API v3 key
-const YT_API_KEY = "AIzaSyAixuU0sg_TtnQvDrwkMKRnyFtFmWoTcGI";
-
-// Hardcoded channel ID for @Afronated — verified from youtube.com/@Afronated
+const YT_API_KEY    = "AIzaSyAixuU0sg_TtnQvDrwkMKRnyFtFmWoTcGI";
 const YT_CHANNEL_ID = "UCy6712z38Ovxm4gsf_yN1Rg";
 
-// ─── Short detection threshold ────────────────────────────────────────────────
-// YouTube's own Shorts shelf only shows videos ≤60 seconds.
-// We use 62s as a small buffer for edge cases.
-// Videos > 62 seconds are treated as long-form / interviews.
-// We deliberately do NOT check #shorts in title/description because:
-//   1. Creators sometimes tag long videos with #shorts accidentally
-//   2. YouTube's own categorisation is purely duration-based for the Shorts shelf
-//   3. The brand's long-form interviews are all well over 5 minutes
+// ─── Thresholds ───────────────────────────────────────────────────────────────
+// Videos ≤ 62 s  → Shorts shelf
 const SHORTS_MAX_SECONDS = 62;
+
+// Videos > 180 s (3 min) AND matching INTERVIEW_KEYWORDS → Interviews section.
+// Everything else (event clips, music videos, etc.) is intentionally excluded.
+const INTERVIEW_MIN_SECONDS = 180;
+
+/**
+ * INTERVIEW DETECTION STRATEGY
+ * ─────────────────────────────
+ * Afronated names every interview episode "… | Behind The Creative …"
+ * (confirmed across all six existing episodes).
+ *
+ * Filtering purely by duration breaks when the brand uploads long non-interview
+ * content (event recaps, freestyle sets, etc.). Title-keyword detection is far
+ * more reliable because:
+ *   1. The brand already uses a consistent naming convention.
+ *   2. It self-updates — new episodes auto-appear; other videos auto-exclude.
+ *   3. It requires zero maintenance unless the brand renames their series.
+ *
+ * Add extra keywords here if the brand starts a second interview series.
+ */
+const INTERVIEW_KEYWORDS = ["behind the creative"];
+
+function isInterview(title: string, durationSeconds: number): boolean {
+  if (durationSeconds < INTERVIEW_MIN_SECONDS) return false;
+  const lower = title.toLowerCase();
+  return INTERVIEW_KEYWORDS.some((kw) => lower.includes(kw));
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,51 +62,28 @@ function parseISO8601(duration: string): number {
   return h * 3600 + m * 60 + s;
 }
 
-/**
- * Determine if a video is a YouTube Short.
- *
- * Strategy: duration ONLY.
- *
- * YouTube Shorts are defined by the platform as videos ≤60 seconds uploaded
- * to the Shorts creation flow. The YouTube Data API does not expose a direct
- * "isShort" boolean, but duration is the most reliable proxy because:
- *
- *   - All Afronated interviews run 5–30+ minutes (well above the threshold)
- *   - All Afronated Shorts are genuine short clips (≤60s)
- *   - Hashtag checks are unreliable (creators misuse #shorts on long videos)
- *
- * If a video is exactly 0 seconds (duration parse failure) we treat it as
- * long-form to avoid incorrectly filtering out a video.
- */
-function isYouTubeShort(durationSeconds: number): boolean {
-  if (durationSeconds === 0) return false; // parse failure — treat as long-form
-  return durationSeconds <= SHORTS_MAX_SECONDS;
-}
-
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export interface UseYouTubeVideosResult {
-  shorts: YTShort[];
-  longForm: YTVideo[];
-  loading: boolean;
-  error: boolean;
+  shorts:   YTShort[];
+  longForm: YTVideo[];   // interview episodes only
+  loading:  boolean;
+  error:    boolean;
 }
 
 export function useYouTubeVideos(): UseYouTubeVideosResult {
-  const [shorts, setShorts] = useState<YTShort[]>([]);
+  const [shorts,   setShorts]   = useState<YTShort[]>([]);
   const [longForm, setLongForm] = useState<YTVideo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function fetchVideos() {
       try {
-        // Step 1: Get uploads playlist ID
-        const channelUrl = new URL(
-          "https://www.googleapis.com/youtube/v3/channels"
-        );
+        // ── Step 1: uploads playlist ID ──────────────────────────────────────
+        const channelUrl = new URL("https://www.googleapis.com/youtube/v3/channels");
         channelUrl.searchParams.set("part", "contentDetails");
         channelUrl.searchParams.set("id", YT_CHANNEL_ID);
         channelUrl.searchParams.set("key", YT_API_KEY);
@@ -100,10 +95,8 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           channelData?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? "";
         if (!uploadsPlaylist) throw new Error("Uploads playlist not found");
 
-        // Step 2: Get latest 50 video IDs (more headroom for filtering)
-        const playlistUrl = new URL(
-          "https://www.googleapis.com/youtube/v3/playlistItems"
-        );
+        // ── Step 2: latest 50 video IDs ──────────────────────────────────────
+        const playlistUrl = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
         playlistUrl.searchParams.set("part", "contentDetails");
         playlistUrl.searchParams.set("playlistId", uploadsPlaylist);
         playlistUrl.searchParams.set("maxResults", "50");
@@ -116,11 +109,14 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
         if (items.length === 0) throw new Error("No videos found");
 
         const videoIds = items
-          .map((item) => ((item?.contentDetails as Record<string, unknown>) ?? {})?.videoId as string)
+          .map((item) =>
+            ((item?.contentDetails as Record<string, unknown>) ?? {})
+              ?.videoId as string,
+          )
           .filter(Boolean)
           .join(",");
 
-        // Step 3: Get full video details
+        // ── Step 3: full video details ────────────────────────────────────────
         const videosUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
         videosUrl.searchParams.set("part", "snippet,contentDetails,statistics");
         videosUrl.searchParams.set("id", videoIds);
@@ -129,19 +125,26 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
         const videosRes = await fetch(videosUrl.toString());
         if (!videosRes.ok) throw new Error(`Videos API: ${videosRes.status}`);
         const videosData = await videosRes.json();
-        const videoItems: Array<Record<string, unknown>> = videosData?.items ?? [];
+        const videoItems: Array<Record<string, unknown>> =
+          videosData?.items ?? [];
 
         if (cancelled) return;
 
+        // ── Step 4: map + classify ────────────────────────────────────────────
         const allVideos: YTVideo[] = videoItems.map((v) => {
-          const snippet = (v.snippet ?? {}) as Record<string, unknown>;
+          const snippet        = (v.snippet        ?? {}) as Record<string, unknown>;
           const contentDetails = (v.contentDetails ?? {}) as Record<string, unknown>;
-          const statistics = (v.statistics ?? {}) as Record<string, unknown>;
-          const title = String(snippet?.title ?? "");
+          const statistics     = (v.statistics     ?? {}) as Record<string, unknown>;
+
+          const title       = String(snippet?.title ?? "");
           const description = String(snippet?.description ?? "");
-          const duration = String(contentDetails?.duration ?? "PT0S");
+          const duration    = String(contentDetails?.duration ?? "PT0S");
           const durationSeconds = parseISO8601(duration);
-          const thumbs = (snippet?.thumbnails ?? {}) as Record<string, { url: string }>;
+
+          const thumbs = (snippet?.thumbnails ?? {}) as Record<
+            string,
+            { url: string }
+          >;
           const thumbnail =
             thumbs?.maxres?.url ??
             thumbs?.standard?.url ??
@@ -149,37 +152,38 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
             thumbs?.medium?.url ??
             `https://img.youtube.com/vi/${String(v.id)}/hqdefault.jpg`;
 
+          const isShort = durationSeconds > 0 && durationSeconds <= SHORTS_MAX_SECONDS;
+
           return {
-            id: String(v.id ?? ""),
+            id:              String(v.id ?? ""),
             title,
             description,
             thumbnail,
-            url: `https://youtu.be/${String(v.id)}`,
+            url:             `https://youtu.be/${String(v.id)}`,
             duration,
             durationSeconds,
-            publishedAt: String(snippet?.publishedAt ?? ""),
-            viewCount: String(statistics?.viewCount ?? ""),
-            // Duration-only detection — no hashtag guessing
-            isShort: isYouTubeShort(durationSeconds),
+            publishedAt:     String(snippet?.publishedAt ?? ""),
+            viewCount:       String(statistics?.viewCount ?? ""),
+            isShort,
           };
         });
 
-        // Shorts: duration ≤ 62 seconds, up to 8 shown
+        // ── Shorts: ≤ 62 s, up to 8 ─────────────────────────────────────────
         const newShorts: YTShort[] = allVideos
           .filter((v) => v.isShort)
           .slice(0, 8)
           .map((v) => ({
-            id: v.id,
-            title: v.title,
+            id:        v.id,
+            title:     v.title,
             thumbnail: v.thumbnail,
-            url: v.url,
+            url:       v.url,
             viewCount: v.viewCount,
           }));
 
-        // Long-form: duration > 62 seconds (interviews, documentaries, etc.)
-        // Show up to 6 — newest first (API returns newest first from uploads playlist)
+        // ── Interviews: "Behind The Creative" episodes, > 3 min, up to 6 ────
+        // Newest-first is guaranteed by the uploads playlist order.
         const newLongForm: YTVideo[] = allVideos
-          .filter((v) => !v.isShort)
+          .filter((v) => !v.isShort && isInterview(v.title, v.durationSeconds))
           .slice(0, 6);
 
         setShorts(newShorts);
@@ -193,7 +197,9 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
     }
 
     fetchVideos();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { shorts, longForm, loading, error };
