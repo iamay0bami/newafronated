@@ -10,6 +10,16 @@
  *   ✅  No API key, no CORS issues, no paid service, no backend required
  *   ✅  Portrait 9:16 cards — looks exactly like TikTok's profile grid
  *
+ * RESPONSIVE GRID STRATEGY
+ * ─────────────────────────────────────────────────────────────────────────────
+ * TikTok's embed iframe has a hard minimum usable width of ~320px. Squeezing
+ * two embeds side-by-side on a 390px viewport (iPhone 12 Pro) gives each card
+ * only ~185px — far too narrow for the iframe to render properly.
+ *
+ * Fix: 1 column on mobile (<640px), 2 columns on small tablets (640–1023px),
+ *      3 columns on desktop (≥1024px). This guarantees each embed is always
+ *      wide enough to render correctly on every screen size.
+ *
  * TO ADD A NEW VIDEO:
  *   1. Go to the video on TikTok → Share → Copy link
  *   2. Grab the numeric ID from: tiktok.com/@afronated/video/XXXXXXXXXXXXXXX
@@ -39,7 +49,11 @@ const TIKTOK_VIDEOS: { id: string }[] = [
   { id: "7625729431235054868" },
 ];
 
-const VISIBLE_COUNT = 6;
+// On mobile we show fewer embeds to keep the page snappy.
+// Desktop shows up to 6 (2 rows × 3 cols).
+// Mobile shows up to 4 (single column, so manageable scroll length).
+const VISIBLE_COUNT_DESKTOP = 6;
+const VISIBLE_COUNT_MOBILE  = 4; // used via JS, not CSS, to avoid rendering hidden iframes
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,6 +97,12 @@ function EmbedCard({ id, index, isVisible }: { id: string; index: number; isVisi
       initial={{ opacity: 0, y: 32, scale: 0.93 }}
       animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 32, scale: 0.93 }}
       transition={{ duration: 0.55, delay: index * 0.09, ease: [0.22, 1, 0.36, 1] }}
+      /*
+        Each card must be wide enough for TikTok's iframe to render.
+        min-w-0 prevents grid blowout. No fixed height — let TikTok
+        control the iframe height (it renders portrait naturally).
+      */
+      className="w-full min-w-0"
     >
       {/*
         Official TikTok blockquote embed.
@@ -119,7 +139,18 @@ export function TikTokDrop() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView   = useInView(sectionRef, { once: true, amount: 0.05 });
 
-  const visibleVideos = TIKTOK_VIDEOS.slice(0, VISIBLE_COUNT);
+  /*
+    Determine visible count based on viewport width at render time.
+    We render fewer embeds on narrow screens so the single-column layout
+    doesn't become an extremely long scroll.
+    This runs once on mount — sufficient since the SDK is loaded once too.
+  */
+  const isMobileViewport =
+    typeof window !== "undefined" && window.innerWidth < 640;
+  const visibleCount = isMobileViewport
+    ? VISIBLE_COUNT_MOBILE
+    : VISIBLE_COUNT_DESKTOP;
+  const visibleVideos = TIKTOK_VIDEOS.slice(0, visibleCount);
 
   // Load the TikTok embed SDK once when the section scrolls into view
   useEffect(() => {
@@ -196,11 +227,27 @@ export function TikTokDrop() {
         </motion.div>
 
         {/*
-          ── Embed grid ──────────────────────────────────────────────────────────
-          3 columns on md+, 2 columns on mobile.
-          The <style> tag overrides TikTok's default max-width (605px) so each
-          card fills its grid cell cleanly.
-        */}
+          ── Responsive embed grid ──────────────────────────────────────────────
+          COLUMN STRATEGY:
+            • <640px  (mobile phones)  → 1 column
+              Each embed gets full container width (~358px on iPhone 12 Pro).
+              TikTok's iframe renders cleanly at this width.
+
+            • 640–1023px (tablets, large phones landscape) → 2 columns
+              Each embed gets ~300–460px. Comfortable for TikTok rendering.
+
+            • ≥1024px (desktop) → 3 columns
+              Classic 3-up grid, plenty of width per card.
+
+          The <style> tag below overrides TikTok's hard-coded max-width (605px)
+          and min-width so every card fills its grid cell exactly.
+
+          WHY NOT use CSS to hide cards on mobile?
+          Rendering hidden iframes still loads TikTok's embed SDK for each one,
+          which is wasteful and can slow mobile page load. Instead we slice the
+          array in JS above (VISIBLE_COUNT_MOBILE = 4) so fewer iframes are
+          mounted on small screens.
+        ──────────────────────────────────────────────────────────────────────── */}
         <style>{`
           .tt-grid .tiktok-embed,
           .tt-grid .tiktok-embed iframe {
@@ -214,7 +261,7 @@ export function TikTokDrop() {
           }
         `}</style>
 
-        <div className="tt-grid grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+        <div className="tt-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {visibleVideos.map((v, i) => (
             <EmbedCard key={v.id} id={v.id} index={i} isVisible={isInView} />
           ))}

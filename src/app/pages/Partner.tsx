@@ -60,14 +60,32 @@ export function Partner() {
 
         {/* Partnership options */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="mb-20">
-          <p className={`text-xl leading-relaxed mb-16 max-w-3xl ${T.textMuted}`}>Collaborate with Afronated to reach an engaged community of creative youth and culture enthusiasts.</p>
+          <p className={`text-xl leading-relaxed mb-16 max-w-3xl ${T.textMuted}`}>
+            Collaborate with Afro-Nated to reach an engaged community of creatives, culture enthusiasts, and the next generation of African storytellers.
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {[
-              { title: "Brand Partnerships", desc: "Authentic integration opportunities that align with our community values and creative vision.",        shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded"/> },
-              { title: "Event Coverage",     desc: "Professional documentation and storytelling for festivals, showcases, and cultural events.",           shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded-full"/> },
-              { title: "Content Creation",  desc: "Custom video production, interviews, and editorial content tailored to your objectives.",               shape: <div className="w-6 h-6 border-2 border-[#ef4444]"/> },
-              { title: "Community Access",  desc: "Direct engagement with our audience through sponsored content and collaborative campaigns.",            shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded-lg rotate-45"/> },
+              {
+                title: "Brand Partnerships",
+                desc: "Authentic integration opportunities that align with our creative community's values and cultural vision.",
+                shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded"/>
+              },
+              {
+                title: "Event Coverage",
+                desc: "Professional documentation and storytelling for creative showcases, cultural events, festivals, and exhibitions.",
+                shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded-full"/>
+              },
+              {
+                title: "Creative Production",
+                desc: "Custom video production, editorial features, interviews, and creative content tailored to your objectives.",
+                shape: <div className="w-6 h-6 border-2 border-[#ef4444]"/>
+              },
+              {
+                title: "Community Access",
+                desc: "Direct engagement with our audience of creatives through sponsored content and collaborative campaigns.",
+                shape: <div className="w-6 h-6 border-2 border-[#ef4444] rounded-lg rotate-45"/>
+              },
             ].map(({ title, desc, shape }) => (
               <div key={title} className={cardCls}>
                 <div className="w-12 h-12 bg-[#ef4444]/20 rounded-lg flex items-center justify-center mb-4">{shape}</div>
@@ -89,7 +107,7 @@ export function Partner() {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4" style={{ fontFamily: "Montserrat, sans-serif" }}>SEND AN INQUIRY</h2>
-            <p className={`mb-12 ${T.textFaint}`}>Tell us about your brand or project and we'll follow up with our media kit.</p>
+            <p className={`mb-12 ${T.textFaint}`}>Tell us about your brand, project, or creative venture and we'll follow up with our media kit.</p>
 
             {status === "success" ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center space-y-4">
@@ -137,7 +155,7 @@ export function Partner() {
 
                 {/* Organization */}
                 <div>
-                  <label htmlFor="partner-organization" className={labelCls}>Organization</label>
+                  <label htmlFor="partner-organization" className={labelCls}>Organization / Brand</label>
                   <input
                     type="text"
                     id="partner-organization"
@@ -146,14 +164,14 @@ export function Partner() {
                     inputMode="text"
                     value={formData.organization}
                     onChange={handleChange}
-                    placeholder="Brand / Company"
+                    placeholder="Your brand, studio, agency, or collective"
                     className={inputCls}
                   />
                 </div>
 
                 {/* Type */}
                 <div>
-                  <label htmlFor="partner-type" className={labelCls}>Type *</label>
+                  <label htmlFor="partner-type" className={labelCls}>Type of Partnership *</label>
                   <select
                     id="partner-type"
                     name="type"
@@ -168,7 +186,8 @@ export function Partner() {
                     <option value="sponsorship">Sponsorship</option>
                     <option value="brand-partnership">Brand Partnership</option>
                     <option value="event-coverage">Event Coverage</option>
-                    <option value="content-creation">Content Creation</option>
+                    <option value="creative-production">Creative Production</option>
+                    <option value="community-campaign">Community Campaign</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
@@ -183,7 +202,7 @@ export function Partner() {
                     autoComplete="off"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Tell us about your brand and how you'd like to work together..."
+                    placeholder="Tell us about your brand or creative project and how you'd like to work together..."
                     rows={6}
                     className={inputCls + " resize-none"}
                   />

@@ -51,14 +51,6 @@ const teamMembers: TeamMember[] = [
     backImage: "/veronica-front.png",
     instagram: "https://www.instagram.com/verah_skill_guild/",
   },
-  {
-    name: "Bamgbola Onaopemipo",
-    role: "Content Creator",
-    bio: "A creative storyteller and content creator driving student engagement and purposeful community impact.",
-    frontImage: "/opemipo-front.png",
-    backImage: "/opemipo-second.png",
-    instagram: "https://www.instagram.com/the_real_ope_",
-  },
 ];
 
 // ─── Signal Card ──────────────────────────────────────────────────────────────
@@ -400,12 +392,18 @@ export function Team() {
             MEET THE TEAM
           </h2>
           <p className={`text-lg md:text-xl max-w-2xl mx-auto ${T.textMuted}`}>
-            The visionaries and storytellers behind Afronated
+            The visionaries and storytellers behind Afro-Nated
           </p>
         </motion.div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {/*
+          Cards grid — 3 members:
+          • Mobile  (<640px):  1 column, centred
+          • sm–md   (640–1023px): 3 columns (cards are naturally narrower but fine at this range)
+          • lg+     (≥1024px): 3 columns with comfortable max-width
+          We cap the grid at max-w-4xl on desktop so 3 cards don't stretch too wide.
+        */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
           {teamMembers.map((member, index) => (
             <SignalCard key={member.name} member={member} index={index} />
           ))}

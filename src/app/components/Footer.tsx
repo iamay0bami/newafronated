@@ -54,7 +54,7 @@ export function Footer() {
           className={`text-[12vw] md:text-[15vw] lg:text-[18vw] font-black tracking-tighter whitespace-nowrap ${T.text}`}
           style={{ fontFamily: "Montserrat, sans-serif" }}
         >
-          AFRONATED
+          AFRO-NATED
         </motion.h2>
       </div>
 
@@ -102,7 +102,7 @@ export function Footer() {
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
           className={`flex flex-col md:flex-row justify-between items-center gap-4 text-sm ${T.textFaint}`}>
-          <p>© 2026 Afronated. All rights reserved.</p>
+          <p>© 2026 Afro-Nated. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link to="/privacy" className="hover:text-[#ef4444] transition-colors">Privacy Policy</Link>
             <Link to="/terms"   className="hover:text-[#ef4444] transition-colors">Terms of Service</Link>

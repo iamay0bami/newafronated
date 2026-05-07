@@ -60,7 +60,6 @@ const HARDCODED_VIDEOS: VideoItem[] = [
 // ─── Convert dynamic YTVideo → VideoItem ─────────────────────────────────────
 
 function ytVideoToItem(v: YTVideo): VideoItem {
-  // Try to extract a guest name from title (e.g. "Interview with NAME | ...")
   const titleParts = v.title.split(/[|–—\-:]/);
   const guest = titleParts.length > 1 ? titleParts[1].trim() : "Featured Guest";
   const titleMain = titleParts[0].trim();
@@ -196,20 +195,18 @@ export function Interviews({
 }: InterviewsProps) {
   const T = useT();
 
-  // Merge: use dynamic long-form if available, otherwise fall back to hardcoded
   const displayVideos: VideoItem[] =
     dynamicLoading
-      ? [] // show skeletons
+      ? []
       : dynamicVideos.length > 0
         ? dynamicVideos.map(ytVideoToItem)
         : HARDCODED_VIDEOS;
 
   const showSkeletons = dynamicLoading;
 
-  // Always ensure at least 4 hardcoded are shown if dynamic returns < 4
   const finalVideos =
     displayVideos.length >= 4
-      ? displayVideos.slice(0, 6) // show up to 6 dynamic
+      ? displayVideos.slice(0, 6)
       : [
           ...displayVideos,
           ...HARDCODED_VIDEOS.filter(
@@ -247,7 +244,7 @@ export function Interviews({
             <br className="md:hidden" /> INTERVIEWS
           </h2>
           <p className={`text-lg md:text-xl max-w-2xl mx-auto ${T.textMuted}`}>
-            Intimate conversations with the minds shaping Africa's future
+            Intimate conversations with the creatives shaping Africa's future
           </p>
         </motion.div>
 

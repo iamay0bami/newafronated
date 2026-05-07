@@ -43,8 +43,8 @@ export function Mission() {
               Through compelling interviews, documentaries, and visual storytelling, we bring authentic voices to the forefront.
             </p>
             <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              Our work challenges stereotypes, celebrates excellence, and creates a platform where African creators, entrepreneurs,
-              and visionaries can share their stories with the world.
+              Afro-Nated challenges stereotypes, celebrates excellence, and creates a platform where African creatives —
+              entrepreneurs, artists, filmmakers, and visionaries — can share their stories with the world.
             </p>
             <motion.a href="https://medium.com/@afro-nated" target="_blank" rel="noopener noreferrer"
               className={`group relative inline-flex items-center gap-3 hover:text-[#ef4444] transition-colors duration-300 pt-4 ${T.text}`}

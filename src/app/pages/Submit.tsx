@@ -60,10 +60,21 @@ export function Submit() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="space-y-6">
-            <p className={`text-lg leading-relaxed ${T.textMuted}`}>Are you an artist or musician? Know someone we should feature? Want to collaborate? We'd love to hear from you.</p>
+            <p className={`text-lg leading-relaxed ${T.textMuted}`}>
+              Are you a creative with a story worth telling? Whether you're a photographer, filmmaker, designer, writer, musician, performer, or any kind of creative — Afro-Nated wants to hear from you.
+            </p>
             <ul className={`space-y-3 ${T.textMuted}`}>
-              {["Submit your music or creative projects","Request an interview or feature","Collaboration ideas","Just want to be part of the community"].map(t => (
-                <li key={t} className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] mt-2 flex-shrink-0"/><span>{t}</span></li>
+              {[
+                "Submit your creative work or project",
+                "Request a feature, interview, or spotlight",
+                "Propose a collaboration or creative partnership",
+                "Recommend a creative we should know about",
+                "Just want to connect with the community",
+              ].map(t => (
+                <li key={t} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] mt-2 flex-shrink-0"/>
+                  <span>{t}</span>
+                </li>
               ))}
             </ul>
             <div className="pt-6">
@@ -147,9 +158,10 @@ export function Submit() {
                     style={selectStyle}
                   >
                     <option value="">Select...</option>
-                    <option value="submit-story">Submit my story</option>
-                    <option value="recommend">Recommend someone to feature</option>
-                    <option value="collaborate">Collaborate with Afronated</option>
+                    <option value="submit-work">Submit my creative work</option>
+                    <option value="feature-request">Request a feature or spotlight</option>
+                    <option value="recommend">Recommend a creative</option>
+                    <option value="collaborate">Collaborate with Afro-Nated</option>
                     <option value="other">Something else</option>
                   </select>
                 </div>
@@ -164,7 +176,7 @@ export function Submit() {
                     autoComplete="off"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Your ideas, links to your work, what you'd like to collaborate on..."
+                    placeholder="Tell us about your creative work, share links, describe what you'd like to collaborate on..."
                     rows={5}
                     className={inputCls + " resize-none"}
                   />
