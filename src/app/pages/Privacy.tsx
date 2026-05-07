@@ -15,7 +15,7 @@ export function Privacy() {
 
           <div className={`space-y-8 leading-relaxed ${T.textMuted}`}>
             {[
-              { title: "Introduction", content: "At Afronated, we respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and protect your information." },
+              { title: "Introduction", content: "At Afro-Nated, we respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and protect your information." },
               { title: "Information We Collect", content: null, list: ["Name and contact information (email, phone)", "Information provided in forms and inquiries", "Social media handles when provided", "Usage data and analytics"], pre: "We collect information that you provide to us including:" },
               { title: "How We Use Your Data", content: null, list: ["Respond to your inquiries and submissions", "Process partnership requests", "Improve our services and content", "Send updates about our work (with your consent)"], pre: "We use your information to:" },
               { title: "Data Protection", content: "We implement appropriate security measures to protect your personal information. Your data is stored securely and we do not sell or share your information with third parties without your consent." },

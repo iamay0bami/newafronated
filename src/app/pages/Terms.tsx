@@ -15,11 +15,11 @@ export function Terms() {
 
           <div className={`space-y-8 leading-relaxed ${T.textMuted}`}>
             {[
-              { title: "Acceptance of Terms", content: "By accessing and using Afronated's website and services, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services." },
+              { title: "Acceptance of Terms", content: "By accessing and using Afro-Nated's website and services, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services." },
               { title: "Use of Services", content: null, pre: "Our services are provided for creative and community purposes. You agree to:", list: ["Use our services lawfully and responsibly", "Not submit false or misleading information", "Respect intellectual property rights", "Not engage in harmful or abusive behavior"] },
-              { title: "Intellectual Property", content: "All content on the Afronated website, including videos, images, text, and logos, is owned by Afronated or our content creators. Unauthorized use of our content is prohibited." },
-              { title: "User Submissions", content: "When you submit content or information to us, you grant Afronated a non-exclusive license to use, reproduce, and display that content for the purposes of reviewing submissions and potential feature opportunities." },
-              { title: "Limitation of Liability", content: 'Afronated is not liable for any indirect, incidental, or consequential damages arising from your use of our services. We provide services "as is" without warranties of any kind.' },
+              { title: "Intellectual Property", content: "All content on the Afro-Nated website, including videos, images, text, and logos, is owned by Afro-Nated or our content creators. Unauthorized use of our content is prohibited." },
+              { title: "User Submissions", content: "When you submit content or information to us, you grant Afro-Nated a non-exclusive license to use, reproduce, and display that content for the purposes of reviewing submissions and potential feature opportunities." },
+              { title: "Limitation of Liability", content: 'Afro-Nated is not liable for any indirect, incidental, or consequential damages arising from your use of our services. We provide services "as is" without warranties of any kind.' },
               { title: "Changes to Terms", content: "We reserve the right to modify these terms at any time. Continued use of our services after changes indicates acceptance of the updated terms." },
             ].map(({ title, content, list, pre }) => (
               <div key={title}>
