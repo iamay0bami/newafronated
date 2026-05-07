@@ -1,76 +1,88 @@
 /**
- * TikTokDrop — Official TikTok Embed Grid
+ * TikTokDrop — Static Thumbnail Grid
  * ─────────────────────────────────────────────────────────────────────────────
- * Uses TikTok's own official embed system (the same <blockquote> embed that
- * TikTok's "Share → Embed" button generates). This is:
+ * Displays TikTok videos as clean portrait thumbnail cards.
+ * Clicking any card opens the TikTok video directly — no in-page playback,
+ * no autoplay, no "related videos" drift.
  *
- *   ✅  Officially supported & free forever — TikTok's own product
- *   ✅  Shows real thumbnail, caption, like/comment/share counts — live data
- *   ✅  Clicking opens TikTok.com on desktop / deep-links the app on mobile
- *   ✅  No API key, no CORS issues, no paid service, no backend required
- *   ✅  Portrait 9:16 cards — looks exactly like TikTok's profile grid
+ * HOW TO ADD NEW VIDEOS (takes ~10 seconds):
+ *   1. Copy the TikTok video URL from the app or browser
+ *      e.g. https://www.tiktok.com/@afronated/video/7636822040716086548
+ *   2. Paste it at the TOP of TIKTOK_VIDEOS below (newest first)
+ *   3. Save. Done.
  *
- * RESPONSIVE GRID STRATEGY
- * ─────────────────────────────────────────────────────────────────────────────
- * TikTok's embed iframe has a hard minimum usable width of ~320px. Squeezing
- * two embeds side-by-side on a 390px viewport (iPhone 12 Pro) gives each card
- * only ~185px — far too narrow for the iframe to render properly.
+ * THUMBNAIL STRATEGY:
+ *   TikTok's oEmbed endpoint (api.tiktok.com/v1/oembed) returns a
+ *   thumbnail_url for each video — no API key, no auth, completely free.
+ *   We fetch thumbnails lazily when the section scrolls into view, so there's
+ *   zero performance cost until the user reaches this section.
+ *   If a thumbnail fails (deleted/private video), the card shows a branded
+ *   fallback with the Afronated red accent — always looks intentional.
  *
- * Fix: 1 column on mobile (<640px), 2 columns on small tablets (640–1023px),
- *      3 columns on desktop (≥1024px). This guarantees each embed is always
- *      wide enough to render correctly on every screen size.
- *
- * TO ADD A NEW VIDEO:
- *   1. Go to the video on TikTok → Share → Copy link
- *   2. Grab the numeric ID from: tiktok.com/@afronated/video/XXXXXXXXXXXXXXX
- *   3. Add { id: "XXXXXXXXXXXXXXX" } at the TOP of TIKTOK_VIDEOS (newest first)
+ * RESPONSIVE GRID:
+ *   Mobile  (<480px):  2 columns
+ *   sm      (480px+):  3 columns
+ *   md      (768px+):  4 columns
+ *   lg      (1024px+): 5 columns
+ *   xl      (1280px+): 6 columns
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useInView } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Play } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// ─── ✏️  ADD NEW VIDEOS HERE — paste the full TikTok URL, newest first ────────
+const TIKTOK_VIDEOS: string[] = [
+  "https://www.tiktok.com/@afronated/video/7636822040716086548",
+  "https://www.tiktok.com/@afronated/video/7634714587706821909",
+  "https://www.tiktok.com/@afronated/video/7631498414395624724",
+  "https://www.tiktok.com/@afronated/video/7630882854968249620",
+  "https://www.tiktok.com/@afronated/video/7627601060894461204",
+  "https://www.tiktok.com/@afronated/video/7627153826323156245",
+  "https://www.tiktok.com/@afronated/video/7626054468563717397",
+  "https://www.tiktok.com/@afronated/video/7625729431235054868",
+];
 
 const TIKTOK_USERNAME    = "afronated";
 const TIKTOK_PROFILE_URL = "https://www.tiktok.com/@afronated";
 
-// Newest first. Max VISIBLE_COUNT are rendered.
-const TIKTOK_VIDEOS: { id: string }[] = [
-  { id: "7636822040716086548" },
-  { id: "7634714587706821909" },
-  { id: "7631498414395624724" },
-  { id: "7630882854968249620" },
-  { id: "7627601060894461204" },
-  { id: "7627153826323156245" },
-  { id: "7626054468563717397" },
-  { id: "7625729431235054868" },
-];
+// Max cards to render (keeps mobile scroll manageable)
+const MAX_CARDS = 8;
 
-// On mobile we show fewer embeds to keep the page snappy.
-// Desktop shows up to 6 (2 rows × 3 cols).
-// Mobile shows up to 4 (single column, so manageable scroll length).
-const VISIBLE_COUNT_DESKTOP = 6;
-const VISIBLE_COUNT_MOBILE  = 4; // used via JS, not CSS, to avoid rendering hidden iframes
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface TikTokCard {
+  url: string;
+  thumbnail: string | null; // null = loading, "" = failed
+  title: string;
+}
+
+// ─── oEmbed fetcher ───────────────────────────────────────────────────────────
+// TikTok's oEmbed endpoint is free, no API key needed.
+// Returns: { thumbnail_url, title, author_name, … }
+
+async function fetchOEmbed(videoUrl: string): Promise<{ thumbnail: string; title: string }> {
+  const endpoint = `https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`;
+  const res = await fetch(endpoint);
+  if (!res.ok) throw new Error(`oEmbed ${res.status}`);
+  const data = await res.json();
+  return {
+    thumbnail: data.thumbnail_url ?? "",
+    title:     data.title        ?? "",
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function videoUrl(id: string) {
-  return `https://www.tiktok.com/@${TIKTOK_USERNAME}/video/${id}`;
+function TikTokIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z" />
+    </svg>
+  );
 }
-
-function loadTikTokSDK() {
-  if (document.getElementById("tiktok-embed-sdk")) return;
-  const s   = document.createElement("script");
-  s.id      = "tiktok-embed-sdk";
-  s.src     = "https://www.tiktok.com/embed.js";
-  s.async   = true;
-  document.body.appendChild(s);
-}
-
-// ─── UI helpers ───────────────────────────────────────────────────────────────
 
 function LiveDot() {
   return (
@@ -81,54 +93,126 @@ function LiveDot() {
   );
 }
 
-function TikTokIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z" />
-    </svg>
-  );
-}
+// ─── Single card ──────────────────────────────────────────────────────────────
 
-// ─── Single embed card ────────────────────────────────────────────────────────
+function VideoCard({
+  card,
+  index,
+  isVisible,
+}: {
+  card: TikTokCard;
+  index: number;
+  isVisible: boolean;
+}) {
+  const T = useT();
+  const [hovered, setHovered] = useState(false);
+  const isLoading = card.thumbnail === null;
+  const hasFailed = card.thumbnail === "";
 
-function EmbedCard({ id, index, isVisible }: { id: string; index: number; isVisible: boolean }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32, scale: 0.93 }}
-      animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 32, scale: 0.93 }}
-      transition={{ duration: 0.55, delay: index * 0.09, ease: [0.22, 1, 0.36, 1] }}
-      /*
-        Each card must be wide enough for TikTok's iframe to render.
-        min-w-0 prevents grid blowout. No fixed height — let TikTok
-        control the iframe height (it renders portrait naturally).
-      */
-      className="w-full min-w-0"
+    <motion.a
+      href={card.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={card.title || `Watch TikTok video ${index + 1}`}
+      className="block relative w-full cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] rounded-xl"
+      style={{ aspectRatio: "9/16" }}
+      initial={{ opacity: 0, y: 28, scale: 0.92 }}
+      animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 28, scale: 0.92 }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 22,
+        delay: Math.min(index * 0.06, 0.42), // cap stagger so last card doesn't wait forever
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/*
-        Official TikTok blockquote embed.
-        TikTok's SDK (embed.js) scans the DOM for these and replaces each with
-        a live iframe showing: video thumbnail, caption, username, engagement counts.
-        data-embed-from="oembed" is TikTok's recommended attribution flag.
-      */}
-      <blockquote
-        className="tiktok-embed"
-        cite={videoUrl(id)}
-        data-video-id={id}
-        data-embed-from="oembed"
-        style={{ maxWidth: "100%", minWidth: "0", margin: 0 }}
-      >
-        <section>
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={videoUrl(id)}
-            style={{ fontSize: "0.75rem", opacity: 0.5 }}
+      {/* ── Card shell ── */}
+      <div className="relative w-full h-full rounded-xl overflow-hidden group">
+
+        {/* ── Thumbnail / loading / fallback ── */}
+        {isLoading ? (
+          // Skeleton shimmer while fetching
+          <div
+            className={`w-full h-full animate-pulse ${
+              T.isDark ? "bg-white/8" : "bg-black/6"
+            }`}
           >
-            Watch on TikTok ↗
-          </a>
-        </section>
-      </blockquote>
-    </motion.div>
+            <div className="w-full h-full bg-gradient-to-br from-transparent via-[#ef4444]/5 to-[#ef4444]/10" />
+          </div>
+        ) : hasFailed ? (
+          // Branded fallback — looks intentional, not broken
+          <div
+            className={`w-full h-full flex flex-col items-center justify-center gap-3 ${
+              T.isDark ? "bg-[#111]" : "bg-[#f0f0f0]"
+            }`}
+          >
+            <div className="w-8 h-1 bg-[#ef4444]" />
+            <TikTokIcon size={28} />
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}>
+              @{TIKTOK_USERNAME}
+            </span>
+          </div>
+        ) : (
+          // Real thumbnail
+          <img
+            src={card.thumbnail!}
+            alt={card.title || `TikTok by @${TIKTOK_USERNAME}`}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            draggable={false}
+          />
+        )}
+
+        {/* ── Always-present gradient overlay ── */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+
+        {/* ── "SHORT" badge top-left ── */}
+        <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded-full text-[9px] sm:text-[10px] font-bold text-white tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+            TIKTOK
+          </span>
+        </div>
+
+        {/* ── Hover overlay — play icon + "Watch on TikTok" ── */}
+        <motion.div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10"
+          animate={{ opacity: hovered ? 1 : 0 }}
+          transition={{ duration: 0.18 }}
+          aria-hidden="true"
+        >
+          {/* Play pill */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ef4444] rounded-full shadow-lg shadow-black/40">
+            <Play className="w-3 h-3 text-white" fill="white" />
+            <span className="text-white text-[10px] font-bold tracking-wider uppercase whitespace-nowrap">
+              Watch on TikTok
+            </span>
+          </div>
+        </motion.div>
+
+        {/* ── Hover border glow ── */}
+        <motion.div
+          className="absolute inset-0 rounded-xl pointer-events-none"
+          animate={{
+            boxShadow: hovered
+              ? "inset 0 0 0 2px #ef4444, 0 0 24px rgba(239,68,68,0.35)"
+              : "inset 0 0 0 0px transparent",
+          }}
+          transition={{ duration: 0.2 }}
+        />
+
+        {/* ── Bottom label ── */}
+        {!isLoading && !hasFailed && card.title && (
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10 pointer-events-none">
+            <p className="text-white text-[10px] sm:text-xs font-semibold leading-snug line-clamp-2 opacity-80">
+              {card.title}
+            </p>
+          </div>
+        )}
+      </div>
+    </motion.a>
   );
 }
 
@@ -139,23 +223,41 @@ export function TikTokDrop() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView   = useInView(sectionRef, { once: true, amount: 0.05 });
 
-  /*
-    Determine visible count based on viewport width at render time.
-    We render fewer embeds on narrow screens so the single-column layout
-    doesn't become an extremely long scroll.
-    This runs once on mount — sufficient since the SDK is loaded once too.
-  */
-  const isMobileViewport =
-    typeof window !== "undefined" && window.innerWidth < 640;
-  const visibleCount = isMobileViewport
-    ? VISIBLE_COUNT_MOBILE
-    : VISIBLE_COUNT_DESKTOP;
-  const visibleVideos = TIKTOK_VIDEOS.slice(0, visibleCount);
+  // Card state: initialise with null thumbnails (loading)
+  const [cards, setCards] = useState<TikTokCard[]>(() =>
+    TIKTOK_VIDEOS.slice(0, MAX_CARDS).map((url) => ({
+      url,
+      thumbnail: null,
+      title: "",
+    }))
+  );
 
-  // Load the TikTok embed SDK once when the section scrolls into view
+  // Fetch all thumbnails once the section enters the viewport
+  const fetchStarted = useRef(false);
+
+  const fetchThumbnails = useCallback(async () => {
+    const urls = TIKTOK_VIDEOS.slice(0, MAX_CARDS);
+
+    // Fire all requests in parallel for speed
+    const results = await Promise.allSettled(urls.map(fetchOEmbed));
+
+    setCards(
+      urls.map((url, i) => {
+        const result = results[i];
+        if (result.status === "fulfilled") {
+          return { url, thumbnail: result.value.thumbnail, title: result.value.title };
+        }
+        return { url, thumbnail: "", title: "" }; // failed → branded fallback
+      })
+    );
+  }, []);
+
   useEffect(() => {
-    if (isInView) loadTikTokSDK();
-  }, [isInView]);
+    if (isInView && !fetchStarted.current) {
+      fetchStarted.current = true;
+      fetchThumbnails();
+    }
+  }, [isInView, fetchThumbnails]);
 
   return (
     <section
@@ -226,45 +328,43 @@ export function TikTokDrop() {
           <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent min-w-0" />
         </motion.div>
 
-        {/*
-          ── Responsive embed grid ──────────────────────────────────────────────
-          COLUMN STRATEGY:
-            • <640px  (mobile phones)  → 1 column
-              Each embed gets full container width (~358px on iPhone 12 Pro).
-              TikTok's iframe renders cleanly at this width.
+        {/* ─────────────────────────────────────────────────────────────────────
+          RESPONSIVE GRID
+          • 2 cols on the smallest phones  (default, < 480px)
+          • 3 cols from 480 px (xs / large phones portrait)
+          • 4 cols from 768 px (tablets)
+          • 5 cols from 1024 px (small desktops)
+          • 6 cols from 1280 px (wide desktops)
 
-            • 640–1023px (tablets, large phones landscape) → 2 columns
-              Each embed gets ~300–460px. Comfortable for TikTok rendering.
-
-            • ≥1024px (desktop) → 3 columns
-              Classic 3-up grid, plenty of width per card.
-
-          The <style> tag below overrides TikTok's hard-coded max-width (605px)
-          and min-width so every card fills its grid cell exactly.
-
-          WHY NOT use CSS to hide cards on mobile?
-          Rendering hidden iframes still loads TikTok's embed SDK for each one,
-          which is wasteful and can slow mobile page load. Instead we slice the
-          array in JS above (VISIBLE_COUNT_MOBILE = 4) so fewer iframes are
-          mounted on small screens.
-        ──────────────────────────────────────────────────────────────────────── */}
-        <style>{`
-          .tt-grid .tiktok-embed,
-          .tt-grid .tiktok-embed iframe {
-            width: 100% !important;
-            min-width: 0 !important;
-            max-width: 100% !important;
-          }
-          .tt-grid .tiktok-embed {
-            border-radius: 12px;
-            overflow: hidden;
-          }
-        `}</style>
-
-        <div className="tt-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-          {visibleVideos.map((v, i) => (
-            <EmbedCard key={v.id} id={v.id} index={i} isVisible={isInView} />
-          ))}
+          Each card is 9:16 (portrait), so the grid self-sizes based on
+          available width — no fixed heights needed.
+        ───────────────────────────────────────────────────────────────────── */}
+        <div
+          className="grid gap-2 sm:gap-3"
+          style={{
+            gridTemplateColumns: "repeat(2, 1fr)",
+          }}
+        >
+          {/* Use inline style for the responsive breakpoints since Tailwind
+              v4 requires compiled classes — a JS-driven grid-cols approach
+              avoids the purge issue on dynamic class names. */}
+          <style>{`
+            @media (min-width: 480px)  { .tt-drop-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+            @media (min-width: 768px)  { .tt-drop-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+            @media (min-width: 1024px) { .tt-drop-grid { grid-template-columns: repeat(5, 1fr) !important; } }
+            @media (min-width: 1280px) { .tt-drop-grid { grid-template-columns: repeat(6, 1fr) !important; } }
+          `}</style>
+          <div className="tt-drop-grid grid gap-2 sm:gap-3 col-span-full"
+            style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+            {cards.map((card, i) => (
+              <VideoCard
+                key={card.url}
+                card={card}
+                index={i}
+                isVisible={isInView}
+              />
+            ))}
+          </div>
         </div>
 
         {/* ── Footer ── */}
@@ -276,12 +376,19 @@ export function TikTokDrop() {
             T.isDark ? "border-white/8" : "border-black/8"
           }`}
         >
+          {/* Profile pill */}
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${T.isDark ? "bg-white/8" : "bg-black/6"}`}>
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                T.isDark ? "bg-white/8" : "bg-black/6"
+              }`}
+            >
               <TikTokIcon size={17} />
             </div>
             <div>
-              <p className={`text-sm font-bold tracking-wide ${T.text}`}>@{TIKTOK_USERNAME}</p>
+              <p className={`text-sm font-bold tracking-wide ${T.text}`}>
+                @{TIKTOK_USERNAME}
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <LiveDot />
                 <span className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}>
@@ -291,13 +398,16 @@ export function TikTokDrop() {
             </div>
           </div>
 
+          {/* Tags + CTA */}
           <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
             <div className="hidden sm:flex items-center gap-2 flex-wrap">
               {["African culture", "Music", "Storytelling"].map((tag) => (
                 <span
                   key={tag}
                   className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border ${
-                    T.isDark ? "border-white/10 text-white/40" : "border-black/10 text-black/35"
+                    T.isDark
+                      ? "border-white/10 text-white/40"
+                      : "border-black/10 text-black/35"
                   }`}
                 >
                   {tag}
