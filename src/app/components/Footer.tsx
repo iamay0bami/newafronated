@@ -34,6 +34,7 @@ export function Footer() {
     { label: "Submit",  href: "/submit"                  },
     { label: "Team",    action: () => goTo("team")       },
     { label: "Partner", href: "/partner"                 },
+    { label: "Careers", href: "/careers"                 },
   ];
 
   const socialLinks = [
@@ -103,7 +104,8 @@ export function Footer() {
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
           className={`flex flex-col md:flex-row justify-between items-center gap-4 text-sm ${T.textFaint}`}>
           <p>© 2026 Afro-Nated. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap justify-center">
+            <Link to="/careers" className="hover:text-[#ef4444] transition-colors">Careers</Link>
             <Link to="/privacy" className="hover:text-[#ef4444] transition-colors">Privacy Policy</Link>
             <Link to="/terms"   className="hover:text-[#ef4444] transition-colors">Terms of Service</Link>
           </div>

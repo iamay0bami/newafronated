@@ -5,6 +5,7 @@ import { Submit } from "./pages/Submit";
 import { Partner } from "./pages/Partner";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
+import { Careers } from "./pages/Careers";
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: "submit", Component: Submit },
       { path: "partner", Component: Partner },
+      { path: "careers", Component: Careers },
       { path: "privacy", Component: Privacy },
       { path: "terms", Component: Terms },
     ],

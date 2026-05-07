@@ -21,9 +21,8 @@ function useIsMobile() {
 }
 
 // ─── Decorative audio visualizer ─────────────────────────────────────────────
-// 7 bars, purely decorative CSS animation
 
-const BAR_HEIGHTS = [14, 22, 10, 28, 16, 24, 12]; // base heights in px
+const BAR_HEIGHTS = [14, 22, 10, 28, 16, 24, 12];
 const BAR_DELAYS  = [0, 0.15, 0.3, 0.08, 0.22, 0.1, 0.35];
 
 function AudioVisualizer() {
@@ -226,28 +225,7 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ── Scroll indicator ── */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.5 }}
-        style={{
-          position: "absolute", bottom: "2rem", left: "50%",
-          transform: "translateX(-50%)", zIndex: 10,
-        }}
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            width: "1.5rem", height: "2.5rem",
-            border: "2px solid rgba(255,255,255,0.30)", borderRadius: "9999px",
-            display: "flex", alignItems: "flex-start", justifyContent: "center",
-            padding: "0.5rem",
-          }}
-        >
-          <motion.div style={{ width: "0.375rem", height: "0.5rem", background: "rgba(255,255,255,0.60)", borderRadius: "9999px" }} />
-        </motion.div>
-      </motion.div>
+      {/* Scroll indicator intentionally removed */}
     </section>
   );
 }

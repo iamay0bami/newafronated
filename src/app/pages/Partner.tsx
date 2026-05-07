@@ -10,10 +10,22 @@ const EMAILJS_PUBLIC_KEY  = "oBwCQc9U5DCQ8nOpU";
 async function sendViaEmailJS(params: Record<string, string>) {
   const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY, template_params: params }),
+    headers: {
+      "Content-Type": "application/json",
+      "origin": "http://localhost",
+    },
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID,
+      template_id: EMAILJS_TEMPLATE_ID,
+      user_id: EMAILJS_PUBLIC_KEY,
+      accessToken: EMAILJS_PUBLIC_KEY,
+      template_params: params,
+    }),
   });
-  if (!res.ok) throw new Error("send failed");
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`send failed: ${res.status} ${text}`);
+  }
 }
 
 export function Partner() {
@@ -28,10 +40,22 @@ export function Partner() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await sendViaEmailJS({ to_email: "afronated@gmail.com", from_name: formData.name, from_email: formData.email, reply_to: formData.email, organization: formData.organization, type: formData.type, message: formData.message, subject: `Partnership inquiry from ${formData.name}${formData.organization ? ` (${formData.organization})` : ""}` });
+      await sendViaEmailJS({
+        to_email: "afronated@gmail.com",
+        from_name: formData.name,
+        from_email: formData.email,
+        reply_to: formData.email,
+        organization: formData.organization,
+        type: formData.type,
+        message: formData.message,
+        subject: `Partnership inquiry from ${formData.name}${formData.organization ? ` (${formData.organization})` : ""}`,
+      });
       setFormData({ name: "", email: "", organization: "", type: "", message: "" });
       setStatus("success");
-    } catch { setStatus("error"); }
+    } catch (err) {
+      console.error("[Partner] EmailJS error:", err);
+      setStatus("error");
+    }
   };
 
   const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${T.isDark ? "border-white/20 text-white placeholder:text-white/30" : "border-black/20 text-black placeholder:text-black/30"}`;
@@ -209,7 +233,10 @@ export function Partner() {
                 </div>
 
                 {status === "error" && (
-                  <p className="text-[#ef4444] text-sm">Something went wrong. Please try again or email us directly.</p>
+                  <p className="text-[#ef4444] text-sm">
+                    Something went wrong. Please try again or email us directly at{" "}
+                    <a href="mailto:afronated@gmail.com" className="underline">afronated@gmail.com</a>.
+                  </p>
                 )}
 
                 <motion.button

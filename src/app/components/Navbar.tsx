@@ -74,10 +74,6 @@ export function Navbar() {
     { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4"/>,  label: "TikTok"    },
   ];
 
-  // ─── FIX: Use `lg` breakpoint (1024px) for the desktop nav instead of `md`
-  // (768px). At iPad Mini (768px) and iPad Air (820px) the nav links + social
-  // icons + theme toggle all had to cram into the pill — switching to lg gives
-  // those tablet sizes a clean hamburger menu instead of an overflowing row.
   const linkCls = `text-sm font-medium transition-colors tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
   const mobileLinkCls = `w-full text-left px-4 py-3 rounded-lg transition-all font-medium tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
 
@@ -110,15 +106,18 @@ export function Navbar() {
             ))}
             <Link to="/submit"  onClick={closeMobile} className={linkCls}>SUBMIT</Link>
             <Link to="/partner" onClick={closeMobile} className={linkCls}>PARTNER</Link>
+            <Link to="/careers" onClick={closeMobile} className={`${linkCls} relative`}>
+              CAREERS
+              {/* Small red dot to draw attention to the new page */}
+              <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
+            </Link>
           </div>
 
           {/* ── Right cluster: social icons + theme toggle + hamburger ── */}
           <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3">
 
-            {/* Social icons — hidden on mobile, visible from md+ but only 3 icons
-                to avoid overflow on iPad Mini; all 5 shown at lg+ */}
+            {/* Social icons — hidden on mobile, visible from md+ */}
             <div className="hidden md:flex lg:hidden items-center gap-2">
-              {/* Show only YouTube, Instagram, X on md tablets to save space */}
               {socialLinks.slice(0, 3).map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
                    className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
@@ -137,7 +136,7 @@ export function Navbar() {
               {T.isDark ? <SunIcon /> : <MoonIcon />}
             </button>
 
-            {/* Hamburger — shown below lg (covers mobile + iPad Mini/Air) */}
+            {/* Hamburger — shown below lg */}
             <button onClick={() => setIsMobileMenuOpen(o => !o)} aria-label="Toggle menu"
               className={`lg:hidden transition-colors ${T.textMuted}`}>
               {isMobileMenuOpen ? <X className="w-6 h-6"/> : <Menu className="w-6 h-6"/>}
@@ -146,7 +145,7 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      {/* ── Mobile / tablet slide-down menu (shown below lg) ── */}
+      {/* ── Mobile / tablet slide-down menu ── */}
       <motion.div
         initial={false}
         animate={{ opacity: isMobileMenuOpen ? 1 : 0, y: isMobileMenuOpen ? 0 : -20, pointerEvents: isMobileMenuOpen ? "auto" : "none" }}
@@ -160,6 +159,12 @@ export function Navbar() {
             ))}
             <Link to="/submit"  onClick={closeMobile} className={`block ${mobileLinkCls}`}>SUBMIT</Link>
             <Link to="/partner" onClick={closeMobile} className={`block ${mobileLinkCls}`}>PARTNER</Link>
+            <Link to="/careers" onClick={closeMobile} className={`block ${mobileLinkCls} flex items-center gap-2`}>
+              CAREERS
+              <span className="inline-flex items-center px-2 py-0.5 bg-[#ef4444]/20 border border-[#ef4444]/40 rounded-full text-[#ef4444] text-[9px] font-bold tracking-widest uppercase">
+                Hiring
+              </span>
+            </Link>
           </div>
 
           <div className={`h-px ${T.isDark ? "bg-white/10" : "bg-black/10"}`}/>
