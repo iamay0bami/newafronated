@@ -80,6 +80,11 @@ function LiveDot() {
 }
 
 // ─── Single video card ────────────────────────────────────────────────────────
+// Fixed card width so all cards are identical in size.
+
+const CARD_WIDTH_CLASS =
+  "w-[70vw] sm:w-[38vw] md:w-[26vw] lg:w-[20vw] xl:w-[16vw]";
+const CARD_MAX_WIDTH = "max-w-[260px]";
 
 function VideoCard({
   video,
@@ -101,7 +106,7 @@ function VideoCard({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={video.title || `Watch TikTok video ${index + 1}`}
-      className="flex-shrink-0 w-[75vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[18vw] max-w-[320px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] rounded-xl"
+      className={`flex-shrink-0 ${CARD_WIDTH_CLASS} ${CARD_MAX_WIDTH} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] rounded-xl block`}
       initial={{ opacity: 0, y: 28 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
       transition={{
@@ -184,11 +189,18 @@ function VideoCard({
         </div>
 
         {/* ── Caption below thumbnail ── */}
-        <div className="mt-2 px-0.5">
+        <div className="mt-2.5 px-1 pb-1">
           <p
             className={`text-[11px] sm:text-xs leading-snug line-clamp-2 font-medium ${
               T.isDark ? "text-white/70" : "text-black/60"
             }`}
+            title={
+              isLoading
+                ? "Loading..."
+                : hasFailed
+                ? "Video unavailable"
+                : video.title
+            }
           >
             {isLoading
               ? "Loading..."
@@ -202,26 +214,28 @@ function VideoCard({
   );
 }
 
-// ─── Skeleton card ────────────────────────────────────────────────────────────
+// ─── Skeleton card — same fixed dimensions ────────────────────────────────────
 
 function SkeletonCard() {
   const T = useT();
   return (
-    <div className="flex-shrink-0 w-[75vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[18vw] max-w-[320px]">
+    <div
+      className={`flex-shrink-0 ${CARD_WIDTH_CLASS} ${CARD_MAX_WIDTH}`}
+    >
       <div
         className={`w-full animate-pulse rounded-xl ${
           T.isDark ? "bg-white/8" : "bg-black/6"
         }`}
         style={{ aspectRatio: "9/16" }}
       />
-      <div className="mt-2 space-y-1.5 px-0.5">
+      <div className="mt-2.5 space-y-1.5 px-1">
         <div
-          className={`h-3 w-3/4 rounded animate-pulse ${
+          className={`h-3 w-full rounded animate-pulse ${
             T.isDark ? "bg-white/8" : "bg-black/6"
           }`}
         />
         <div
-          className={`h-3 w-1/2 rounded animate-pulse ${
+          className={`h-3 w-2/3 rounded animate-pulse ${
             T.isDark ? "bg-white/8" : "bg-black/6"
           }`}
         />
@@ -279,7 +293,7 @@ export function TikTokDrop() {
   // ── Scroll helpers ──
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const scrollAmount = scrollRef.current.clientWidth * 0.7;
+    const scrollAmount = scrollRef.current.clientWidth * 0.65;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -461,7 +475,7 @@ export function TikTokDrop() {
               {/* Scrollable track */}
               <div
                 ref={scrollRef}
-                className="flex gap-3 sm:gap-4 px-4 sm:px-6 py-5 sm:py-6 overflow-x-auto scrollbar-hide"
+                className="flex gap-3 sm:gap-4 px-4 sm:px-6 py-5 sm:py-6 overflow-x-auto scrollbar-hide items-start"
                 style={{
                   scrollSnapType: "x mandatory",
                   WebkitOverflowScrolling: "touch",
@@ -502,8 +516,16 @@ export function TikTokDrop() {
               )}
 
               {/* Fade edges */}
-              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-[#0a0a0a] to-transparent" />
-              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#0a0a0a]" />
+              <div
+                className={`pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r ${
+                  T.isDark ? "from-[#0a0a0a]" : "from-white"
+                } to-transparent`}
+              />
+              <div
+                className={`pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-transparent ${
+                  T.isDark ? "to-[#0a0a0a]" : "to-white"
+                }`}
+              />
             </div>
 
             {/* ── Widget footer ── */}
