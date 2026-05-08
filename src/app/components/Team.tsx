@@ -122,7 +122,7 @@ function SignalCard({
         damping: 24,
         delay: entryDelay,
       }}
-      className="relative h-[480px] sm:h-[500px] select-none"
+      className="relative h-[420px] sm:h-[460px] md:h-[520px] lg:h-[560px] select-none"
       style={{ cursor: "crosshair" }}
     >
       <div
@@ -165,7 +165,10 @@ function SignalCard({
               const x = springSpotX.get();
               el.style.background = `radial-gradient(circle 200px at ${x}% ${v}%, rgba(239,68,68,0.18) 0%, transparent 70%)`;
             });
-            return () => { unsub1(); unsub2(); };
+            return () => {
+              unsub1();
+              unsub2();
+            };
           }}
         />
 
@@ -398,12 +401,13 @@ export function Team() {
 
         {/*
           Cards grid — 3 members:
-          • Mobile  (<640px):  1 column, centred
-          • sm–md   (640–1023px): 3 columns (cards are naturally narrower but fine at this range)
-          • lg+     (≥1024px): 3 columns with comfortable max-width
-          We cap the grid at max-w-4xl on desktop so 3 cards don't stretch too wide.
+          • Mobile  (<640px):  1 column, centred, narrower cards
+          • sm–md   (640–1023px): 3 columns
+          • lg+     (≥1024px): 3 columns, wider cards filling the max-w-7xl container
+          We cap the grid at max-w-5xl on lg+ so the cards don't stretch comically
+          wide, but they now use significantly more horizontal space than before.
         */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
           {teamMembers.map((member, index) => (
             <SignalCard key={member.name} member={member} index={index} />
           ))}
