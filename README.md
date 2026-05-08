@@ -1,56 +1,64 @@
-# Afronated — Landing Page
+# Afronated
 
-A creative media collective amplifying African voices through powerful storytelling, innovative media, and cultural excellence.
+Afronated is a creative media collective built around amplifying African voices. The website is the central hub for everything we do — from our interview series and short-form content to our editorial work, team, and community.
+
+The site is designed to feel as intentional as the brand itself. Fast, dark, bold, and built to let the work speak.
+
+---
+
+## What's on the site
+
+**Home** — The full picture. Hero reel, our mission, featured interviews, YouTube Shorts, TikTok feed, Medium articles, Instagram mosaic, and the team.
+
+**Spotlight Interviews** — Conversations with African creatives doing real things. Musicians, filmmakers, entrepreneurs, stylists. The "Behind The Creative" series lives here.
+
+**Put Me On** — A submission form for creatives who want to be featured, collaborate, or just get on our radar.
+
+**Partner** — For brands, agencies, and organisations interested in working with us on content, events, or campaigns.
+
+**Careers** — Roles within the collective — both paid and contributor positions across production, content, and strategy.
+
+**Privacy & Terms** — Standard legal pages, written clearly.
+
+---
 
 ## Stack
 
-- **React 18** + **Vite 6**
-- **TypeScript**
-- **Tailwind CSS v4**
-- **Framer Motion** (via `motion`)
-- **React Router v7**
-- **shadcn/ui** components
+- React 18 + Vite 6
+- TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- React Router v7
+- shadcn/ui
 
-## Getting Started
+---
+
+## Running locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Opens at [http://localhost:5173](http://localhost:5173)
 
-## Build
+---
+
+## Build and deploy
 
 ```bash
 npm run build
-npm run preview   # preview the production build locally
+npm run preview
 ```
 
-## Deploy to Vercel
+Deployed on Vercel. The `vercel.json` file handles SPA routing so all pages work correctly on refresh.
 
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → **New Project** → import your repo
-3. Framework preset: **Vite** (auto-detected)
-4. Build command: `npm run build`
-5. Output directory: `dist`
-6. Click **Deploy** ✓
+---
 
-The included `vercel.json` handles SPA routing so all pages (`/submit`, `/partner`, `/privacy`, `/terms`) work correctly on refresh.
+## Customisation notes
 
-## Pages
-
-| Route | Description |
-|-------|-------------|
-| `/` | Home — Hero, Mission, Interviews, Team |
-| `/submit` | "Put Me On" submission form |
-| `/partner` | Partnership enquiries |
-| `/privacy` | Privacy Policy |
-| `/terms` | Terms of Service |
-
-## Customisation
-
-- **Brand colour** (red `#ef4444`) — search-replace across `/src/app/components/` and `/src/app/pages/`
-- **Logos** — replace `public/logo.png` and `public/logo-preloader.png`
-- **Team members** — edit the `teamMembers` array in `src/app/components/Team.tsx`
-- **Videos** — edit the `videos` array in `src/app/components/Interviews.tsx`
+- Brand colour is `#ef4444` — search across `/src/app/components/` and `/src/app/pages/` to update
+- Team members — edit the `teamMembers` array in `src/app/components/Team.tsx`
+- Interview videos — edit `HARDCODED_VIDEOS` in `src/app/components/Interviews.tsx` or let the YouTube API pull them dynamically
+- TikTok videos — update `TIKTOK_VIDEOS` in `src/app/components/TikTokDrop.tsx`
+- Logos — replace `public/logo.png` and `public/logo-preloader.png`
