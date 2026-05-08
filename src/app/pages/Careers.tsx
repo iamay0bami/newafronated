@@ -83,11 +83,11 @@ const ROLES: Role[] = [
 const VALUES = [
   {
     label: "Cultural Authenticity",
-    desc: "We don't perform African culture — we live it. Every person who joins Afro-Nated brings a perspective rooted in real experience.",
+    desc: "Afro-Nated is shaped by the culture we grew up around and continue to experience every day. From the music we spotlight to the stories we tell, everything comes from a real connection to the communities and creatives inspiring the culture forward.",
   },
   {
     label: "Creative Courage",
-    desc: "We push past the obvious. We want people who are willing to try things, fail sometimes, and try again with more intention.",
+    desc: "We want people who are willing to try things, fail sometimes, and try again with more intention.",
   },
   {
     label: "Collective Ownership",
@@ -274,9 +274,10 @@ export function Careers() {
           <p
             className={`text-xl md:text-2xl leading-relaxed max-w-3xl ${T.textMuted}`}
           >
-            Afro-Nated is a brand in motion. We're not a corporation with a hiring
-            pipeline — we're a creative collective that grows through the people who
-            care about what we're building. If that's you, read on.
+            Afro-Nated is a brand in motion. A creative collective shaped by the
+            people who believe in what we're building. As we continue to grow,
+            we're always excited to connect with thoughtful, passionate creatives
+            who want to grow with us. If that sounds like you, read on.
           </p>
         </motion.div>
 
