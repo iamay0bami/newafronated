@@ -1,7 +1,8 @@
 /**
- * TikTokDrop — Phone-Frame Widget
+ * TikTokDrop — Scrollable Video Feed Widget
  * ─────────────────────────────────────────────────────────────────────────────
- * Displays a TikTok-style phone frame with a scrollable video feed.
+ * Displays TikTok videos as a clean, scrollable collection.
+ * Horizontal scroll on desktop, vertical stack on mobile.
  * Uses TikTok's free oEmbed endpoint for thumbnails.
  * Clicking any video opens it directly on TikTok.com.
  *
@@ -11,7 +12,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useInView } from "motion/react";
-import { ArrowUpRight, Play, Heart, MessageCircle, Share2, Plus } from "lucide-react";
+import { ArrowUpRight, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 
 // ─── ✏️  ADD NEW VIDEOS HERE — paste the full TikTok URL, newest first ────────
@@ -28,7 +29,7 @@ const TIKTOK_VIDEOS: string[] = [
 
 const TIKTOK_USERNAME = "afronated";
 const TIKTOK_PROFILE_URL = "https://www.tiktok.com/@afronated";
-const MAX_VIDEOS = 20; // Fetch up to 20, show all in scrollable list
+const MAX_VIDEOS = 20;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,17 +79,9 @@ function LiveDot() {
   );
 }
 
-/** Fake stat for visual polish — TikTok doesn't expose this via oEmbed */
-function FakeStat({ min = 1200, max = 98000 }: { min?: number; max?: number }) {
-  const n = useRef(Math.floor(Math.random() * (max - min) + min)).current;
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return n.toString();
-}
+// ─── Single video card ────────────────────────────────────────────────────────
 
-// ─── Video Row (inside phone feed) ────────────────────────────────────────────
-
-function VideoRow({
+function VideoCard({
   video,
   index,
   isVisible,
@@ -108,37 +101,37 @@ function VideoRow({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={video.title || `Watch TikTok video ${index + 1}`}
-      className="block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-inset"
-      initial={{ opacity: 0, y: 20 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      className="flex-shrink-0 w-[75vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[18vw] max-w-[320px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] rounded-xl"
+      initial={{ opacity: 0, y: 28 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
       transition={{
         type: "spring",
         stiffness: 200,
         damping: 20,
-        delay: Math.min(index * 0.05, 0.5),
+        delay: Math.min(index * 0.06, 0.5),
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative group cursor-pointer">
-        {/* Thumbnail area — 9:16 aspect */}
-        <div
-          className="relative w-full overflow-hidden"
-          style={{ aspectRatio: "9/16" }}
-        >
+      <div className="relative group cursor-pointer rounded-xl overflow-hidden">
+        {/* ── Thumbnail ── */}
+        <div className="relative w-full" style={{ aspectRatio: "9/16" }}>
           {isLoading ? (
             <div
-              className={`w-full h-full animate-pulse ${
-                T.isDark ? "bg-white/5" : "bg-black/5"
+              className={`w-full h-full animate-pulse rounded-xl ${
+                T.isDark ? "bg-white/8" : "bg-black/6"
               }`}
-            />
+            >
+              <div className="w-full h-full bg-gradient-to-br from-transparent via-[#ef4444]/5 to-[#ef4444]/10" />
+            </div>
           ) : hasFailed ? (
             <div
-              className={`w-full h-full flex flex-col items-center justify-center gap-2 ${
+              className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-xl ${
                 T.isDark ? "bg-[#1a1a1a]" : "bg-[#e8e8e8]"
               }`}
             >
-              <TikTokIcon size={22} />
+              <div className="w-6 h-0.5 bg-[#ef4444]" />
+              <TikTokIcon size={24} />
               <span className="text-[9px] font-bold tracking-widest uppercase opacity-40">
                 @{TIKTOK_USERNAME}
               </span>
@@ -147,49 +140,54 @@ function VideoRow({
             <img
               src={video.thumbnail!}
               alt={video.title || `TikTok by @${TIKTOK_USERNAME}`}
-              className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-[1.03]"
+              className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               draggable={false}
             />
           )}
 
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/70 via-black/5 to-transparent pointer-events-none" />
 
-          {/* Play button — centered */}
+          {/* TikTok badge — top left */}
+          <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-black/55 backdrop-blur-sm rounded-full text-[9px] font-bold text-white tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+              TIKTOK
+            </span>
+          </div>
+
+          {/* Play button — centered, appears on hover */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
             animate={{ opacity: hovered ? 1 : 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.18 }}
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/20">
-              <Play
-                className="w-5 h-5 sm:w-6 sm:h-6 text-white ml-0.5"
-                fill="white"
-              />
+            <div className="flex items-center gap-2 px-3.5 py-2 bg-[#ef4444] rounded-full shadow-lg shadow-black/40">
+              <Play className="w-3.5 h-3.5 text-white" fill="white" />
+              <span className="text-white text-[10px] font-bold tracking-wider uppercase whitespace-nowrap">
+                Watch on TikTok
+              </span>
             </div>
           </motion.div>
 
-          {/* View count badge */}
-          <div className="absolute bottom-2 left-2 z-10 pointer-events-none">
-            <span className="flex items-center gap-1 text-white text-[10px] font-semibold drop-shadow-md">
-              <Play className="w-2.5 h-2.5" fill="white" />{" "}
-              <FakeStat min={500} max={50000} />
-            </span>
-          </div>
+          {/* Hover border glow */}
+          <motion.div
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            animate={{
+              boxShadow: hovered
+                ? "inset 0 0 0 2px #ef4444, 0 0 24px rgba(239,68,68,0.3)"
+                : "inset 0 0 0 0px transparent",
+            }}
+            transition={{ duration: 0.2 }}
+          />
         </div>
 
-        {/* Caption + engagement row */}
-        <div
-          className={`px-3 py-2.5 space-y-1.5 ${
-            T.isDark ? "bg-[#121212]" : "bg-white"
-          } border-b ${
-            T.isDark ? "border-white/5" : "border-black/5"
-          }`}
-        >
+        {/* ── Caption below thumbnail ── */}
+        <div className="mt-2 px-0.5">
           <p
             className={`text-[11px] sm:text-xs leading-snug line-clamp-2 font-medium ${
-              T.isDark ? "text-white/85" : "text-black/80"
+              T.isDark ? "text-white/70" : "text-black/60"
             }`}
           >
             {isLoading
@@ -198,35 +196,37 @@ function VideoRow({
               ? "Video unavailable"
               : video.title || `TikTok by @${TIKTOK_USERNAME}`}
           </p>
-          <div className="flex items-center gap-4 text-[10px] opacity-50">
-            <span className="flex items-center gap-1">
-              <Heart className="w-3 h-3" /> <FakeStat min={100} max={8500} />
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle className="w-3 h-3" />{" "}
-              <FakeStat min={10} max={1200} />
-            </span>
-            <span className="flex items-center gap-1">
-              <Share2 className="w-3 h-3" /> <FakeStat min={50} max={3000} />
-            </span>
-          </div>
         </div>
       </div>
     </motion.a>
   );
 }
 
-// ─── Skeleton rows for loading state ──────────────────────────────────────────
+// ─── Skeleton card ────────────────────────────────────────────────────────────
 
-function SkeletonRow({ index }: { index: number }) {
+function SkeletonCard() {
   const T = useT();
   return (
-    <div
-      className={`animate-pulse ${
-        T.isDark ? "bg-white/5" : "bg-black/5"
-      }`}
-      style={{ aspectRatio: "9/16", marginBottom: "1px" }}
-    />
+    <div className="flex-shrink-0 w-[75vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[18vw] max-w-[320px]">
+      <div
+        className={`w-full animate-pulse rounded-xl ${
+          T.isDark ? "bg-white/8" : "bg-black/6"
+        }`}
+        style={{ aspectRatio: "9/16" }}
+      />
+      <div className="mt-2 space-y-1.5 px-0.5">
+        <div
+          className={`h-3 w-3/4 rounded animate-pulse ${
+            T.isDark ? "bg-white/8" : "bg-black/6"
+          }`}
+        />
+        <div
+          className={`h-3 w-1/2 rounded animate-pulse ${
+            T.isDark ? "bg-white/8" : "bg-black/6"
+          }`}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -235,6 +235,7 @@ function SkeletonRow({ index }: { index: number }) {
 export function TikTokDrop() {
   const T = useT();
   const sectionRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.05 });
 
   const [videos, setVideos] = useState<TikTokVideo[]>(() =>
@@ -275,6 +276,38 @@ export function TikTokDrop() {
 
   const isLoading = videos.some((v) => v.thumbnail === null);
 
+  // ── Scroll helpers ──
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const scrollAmount = scrollRef.current.clientWidth * 0.7;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, videos]);
+
   return (
     <section
       ref={sectionRef}
@@ -300,7 +333,7 @@ export function TikTokDrop() {
         }}
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto">
         {/* ── Section header ── */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -338,216 +371,170 @@ export function TikTokDrop() {
           </p>
         </motion.div>
 
-        {/* ── Live label ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-10"
-        >
-          <div className="w-5 sm:w-6 h-px bg-[#ef4444] flex-shrink-0" />
-          <span
-            className={`text-[9px] sm:text-[10px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase ${T.textFaint} whitespace-nowrap`}
-          >
-            @{TIKTOK_USERNAME} · latest videos
-          </span>
-          <LiveDot />
-          <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent min-w-0" />
-        </motion.div>
-
         {/* ════════════════════════════════════════════════════════════════════
-            PHONE-FRAME WIDGET
+            VIDEO FEED WIDGET
             ════════════════════════════════════════════════════════════════════ */}
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={
-            isInView
-              ? { opacity: 1, y: 0, scale: 1 }
-              : { opacity: 0, y: 40, scale: 0.95 }
+            isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
           }
           transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="flex justify-center"
         >
+          {/* ── Widget container ── */}
           <div
-            className={`relative w-full max-w-[390px] rounded-[2.5rem] overflow-hidden shadow-2xl ${
+            className={`rounded-2xl overflow-hidden border ${
               T.isDark
-                ? "bg-[#0d0d0d] shadow-[#ef4444]/10 ring-1 ring-white/10"
-                : "bg-white shadow-black/15 ring-1 ring-black/10"
+                ? "bg-[#0a0a0a] border-white/8"
+                : "bg-white border-black/8"
+            } shadow-xl ${
+              T.isDark ? "shadow-black/40" : "shadow-black/5"
             }`}
           >
-            {/* ── Phone notch / status bar ── */}
+            {/* ── Widget header ── */}
             <div
-              className={`relative h-10 sm:h-11 flex items-center justify-center ${
-                T.isDark ? "bg-[#0d0d0d]" : "bg-white"
-              }`}
-            >
-              {/* Notch pill */}
-              <div
-                className={`w-20 sm:w-24 h-5 sm:h-6 rounded-full ${
-                  T.isDark ? "bg-[#1a1a1a]" : "bg-[#e5e5e5]"
-                }`}
-              />
-            </div>
-
-            {/* ── Profile header ── */}
-            <div
-              className={`px-4 sm:px-5 py-3 sm:py-4 ${
-                T.isDark ? "bg-[#0d0d0d]" : "bg-white"
+              className={`flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${
+                T.isDark ? "border-white/6" : "border-black/6"
               }`}
             >
               <div className="flex items-center gap-3">
-                {/* Avatar */}
+                {/* TikTok logo mark */}
                 <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center flex-shrink-0 text-lg font-black ${
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     T.isDark
-                      ? "bg-gradient-to-br from-[#ef4444]/30 to-[#ef4444]/10 text-white"
-                      : "bg-gradient-to-br from-[#ef4444]/20 to-[#ef4444]/5 text-black"
+                      ? "bg-white/8"
+                      : "bg-black/6"
                   }`}
                 >
-                  <TikTokIcon size={22} />
+                  <TikTokIcon size={18} />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm sm:text-base font-bold tracking-wide truncate ${T.text}`}
-                  >
-                    @{TIKTOK_USERNAME}
-                  </p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span
-                      className={`text-[10px] sm:text-xs font-semibold ${
-                        T.isDark ? "text-white/40" : "text-black/40"
-                      }`}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p
+                      className={`text-sm sm:text-base font-bold tracking-wide ${T.text}`}
                     >
-                      <span className="font-bold text-inherit">Afronated</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <LiveDot />
-                      <span className="text-[9px] font-bold tracking-widest uppercase text-[#ef4444]">
-                        Live
-                      </span>
-                    </span>
+                      @{TIKTOK_USERNAME}
+                    </p>
+                    <LiveDot />
                   </div>
                   <p
-                    className={`text-[10px] sm:text-[11px] mt-1 ${
-                      T.isDark ? "text-white/30" : "text-black/30"
+                    className={`text-[10px] sm:text-xs ${
+                      T.isDark ? "text-white/35" : "text-black/35"
                     }`}
                   >
-                    <FakeStat min={10000} max={500000} /> followers ·{" "}
-                    <FakeStat min={50000} max={2000000} /> likes
+                    Latest videos on TikTok
                   </p>
                 </div>
-
-                {/* Follow button */}
-                <motion.a
-                  href={TIKTOK_PROFILE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-full text-[11px] sm:text-xs font-bold tracking-wide transition-colors flex-shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Follow
-                </motion.a>
               </div>
 
-              {/* Bio */}
-              <p
-                className={`mt-3 text-[10px] sm:text-[11px] leading-relaxed ${
-                  T.isDark ? "text-white/45" : "text-black/40"
-                }`}
+              {/* Follow button — visible on sm+ */}
+              <motion.a
+                href={TIKTOK_PROFILE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-full text-xs font-bold tracking-wide transition-colors flex-shrink-0"
               >
-                🌍 African culture, music &amp; storytelling. New drops weekly.
-                Tap to watch on TikTok.
-              </p>
-
-              {/* External link hint */}
-              <div
-                className={`mt-2 flex items-center gap-1 text-[9px] ${
-                  T.isDark ? "text-white/25" : "text-black/25"
-                }`}
-              >
-                <ArrowUpRight className="w-2.5 h-2.5" />
-                <span>tiktok.com</span>
-              </div>
+                <TikTokIcon size={12} />
+                Follow
+              </motion.a>
             </div>
 
-            {/* ── Divider ── */}
-            <div
-              className={`h-px ${
-                T.isDark ? "bg-white/8" : "bg-black/8"
-              }`}
-            />
+            {/* ── Scrollable video row ── */}
+            <div className="relative group/widget">
+              {/* Left scroll arrow */}
+              {canScrollLeft && (
+                <button
+                  onClick={() => scroll("left")}
+                  aria-label="Scroll left"
+                  className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-opacity duration-200 ${
+                    T.isDark
+                      ? "bg-black/60 text-white hover:bg-black/80"
+                      : "bg-white/70 text-black hover:bg-white/90"
+                  } shadow-lg opacity-0 group-hover/widget:opacity-100`}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
 
-            {/* ── Tab bar ── */}
+              {/* Scrollable track */}
+              <div
+                ref={scrollRef}
+                className="flex gap-3 sm:gap-4 px-4 sm:px-6 py-5 sm:py-6 overflow-x-auto scrollbar-hide"
+                style={{
+                  scrollSnapType: "x mandatory",
+                  WebkitOverflowScrolling: "touch",
+                }}
+                onScroll={checkScroll}
+              >
+                {isLoading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                      <SkeletonCard key={i} />
+                    ))
+                  : videos.map((video, i) => (
+                      <div
+                        key={video.url}
+                        style={{ scrollSnapAlign: "start" }}
+                      >
+                        <VideoCard
+                          video={video}
+                          index={i}
+                          isVisible={isInView}
+                        />
+                      </div>
+                    ))}
+              </div>
+
+              {/* Right scroll arrow */}
+              {canScrollRight && (
+                <button
+                  onClick={() => scroll("right")}
+                  aria-label="Scroll right"
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-opacity duration-200 ${
+                    T.isDark
+                      ? "bg-black/60 text-white hover:bg-black/80"
+                      : "bg-white/70 text-black hover:bg-white/90"
+                  } shadow-lg opacity-0 group-hover/widget:opacity-100`}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Fade edges */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-[#0a0a0a] to-transparent" />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#0a0a0a]" />
+            </div>
+
+            {/* ── Widget footer ── */}
             <div
-              className={`flex items-center px-4 sm:px-5 py-2 gap-6 text-[10px] sm:text-[11px] font-bold tracking-wide ${
-                T.isDark ? "bg-[#0d0d0d]" : "bg-white"
+              className={`flex items-center justify-between px-4 sm:px-6 py-3 border-t ${
+                T.isDark ? "border-white/6" : "border-black/6"
               }`}
             >
-              <span className="text-[#ef4444] border-b-2 border-[#ef4444] pb-1.5">
-                Videos
-              </span>
               <span
-                className={`pb-1.5 ${
+                className={`text-[10px] sm:text-xs ${
                   T.isDark ? "text-white/30" : "text-black/30"
                 }`}
               >
-                Liked
+                {videos.length} videos
               </span>
-            </div>
-            <div
-              className={`h-px ${
-                T.isDark ? "bg-white/5" : "bg-black/5"
-              }`}
-            />
-
-            {/* ── Scrollable video feed ── */}
-            <div
-              className="overflow-y-auto"
-              style={{ maxHeight: "70vh", WebkitOverflowScrolling: "touch" }}
-            >
-              {isLoading
-                ? // Skeleton state
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <SkeletonRow key={i} index={i} />
-                  ))
-                : // Video rows
-                  videos.map((video, i) => (
-                    <VideoRow
-                      key={video.url}
-                      video={video}
-                      index={i}
-                      isVisible={isInView}
-                    />
-                  ))}
-            </div>
-
-            {/* ── Bottom CTA ── */}
-            <div
-              className={`px-4 sm:px-5 py-3 ${
-                T.isDark ? "bg-[#0d0d0d]" : "bg-white"
-              } border-t ${
-                T.isDark ? "border-white/8" : "border-black/8"
-              }`}
-            >
               <motion.a
                 href={TIKTOK_PROFILE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ x: 3 }}
-                className={`group inline-flex items-center gap-2 text-[11px] sm:text-xs font-bold tracking-wide hover:text-[#ef4444] transition-colors duration-300 ${T.text}`}
+                className={`group inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold tracking-wide hover:text-[#ef4444] transition-colors duration-300 ${T.text}`}
               >
-                <TikTokIcon size={13} />
-                OPEN IN TIKTOK
+                <TikTokIcon size={11} />
+                Open in TikTok
                 <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </motion.a>
             </div>
           </div>
         </motion.div>
 
-        {/* ── Footer ── */}
+        {/* ── Section footer ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
@@ -618,6 +605,17 @@ export function TikTokDrop() {
             : "linear-gradient(to top, white, transparent)",
         }}
       />
+
+      {/* Hide scrollbar utility */}
+      <style>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </section>
   );
 }
