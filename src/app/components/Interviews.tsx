@@ -244,7 +244,7 @@ export function Interviews({
             <br className="md:hidden" /> INTERVIEWS
           </h2>
           <p className={`text-lg md:text-xl max-w-2xl mx-auto ${T.textMuted}`}>
-            Intimate conversations with the creatives shaping Africa's future
+            Conversations with the creatives shaping the culture
           </p>
         </motion.div>
 

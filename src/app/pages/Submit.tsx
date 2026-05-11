@@ -85,7 +85,9 @@ export function Submit() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="space-y-6">
             <p className={`text-lg leading-relaxed ${T.textMuted}`}>
-              Are you a creative with a story worth telling? Whether you're a photographer, filmmaker, designer, writer, musician, performer, or any kind of creative — Afro-Nated wants to hear from you.
+              Are you a creative with work, ideas, or a story worth sharing?
+              Afro-Nated exists to spotlight and connect African creatives
+              through storytelling, interviews, and culture-driven content.
             </p>
             <ul className={`space-y-3 ${T.textMuted}`}>
               {[
@@ -182,11 +184,8 @@ export function Submit() {
                     style={selectStyle}
                   >
                     <option value="">Select...</option>
-                    <option value="submit-work">Submit my creative work</option>
-                    <option value="feature-request">Request a feature or spotlight</option>
-                    <option value="recommend">Recommend a creative</option>
-                    <option value="collaborate">Collaborate with Afro-Nated</option>
-                    <option value="other">Something else</option>
+                    <option value="collaborate">I want to collaborate with Afro-Nated</option>
+                    <option value="paid-project">I want to work with Afro-Nated on a paid project</option>
                   </select>
                 </div>
 
