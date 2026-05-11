@@ -210,7 +210,7 @@ export function Hero() {
               margin: "0 auto 3rem", fontWeight: 300, lineHeight: 1.7,
             }}
           >
-            Amplifying African voices through powerful storytelling, innovative media, and cultural excellence.
+            A media platform that supports and amplifies African creatives and creativity.
           </motion.p>
 
           <motion.button

@@ -18,41 +18,20 @@ const ROLES: Role[] = [
     type: "Paid",
     tag: "Production",
     summary:
-      "You'll shape the final look and feel of our interview series and short-form content. Your eye for pacing, colour, and storytelling will turn raw footage into the kind of visual work that moves people.",
+      "We're looking for a video editor to help shape the visual language of Afro-Nated across interviews, short-form content, and digital storytelling. From full-length conversations to reels and social edits, you'll help turn raw footage into thoughtful, engaging content that feels intentional and culturally connected.",
     whatYouDo: [
-      "Cut and assemble interview footage for our YouTube series and social platforms",
-      "Colour-grade and mix audio to a consistent, high-quality finish",
-      "Create short-form edits and reels adapted for TikTok, Instagram, and YouTube Shorts",
-      "Collaborate directly with the creative director to realise the visual identity of each piece",
-      "Deliver content within agreed timelines and suggest creative improvements along the way",
+      "Edit interview content for YouTube and social platforms",
+      "Create short-form edits for TikTok, Instagram Reels, and YouTube Shorts",
+      "Colour-grade and clean up audio for a polished final product",
+      "Work closely with the creative director to bring each piece to life",
+      "Deliver edits within agreed timelines while contributing creative ideas and improvements",
     ],
     whatWeLookFor: [
-      "A strong portfolio of edited video work — format and style matter less than intention",
-      "Proficiency in Premiere Pro, DaVinci Resolve, or a comparable editing suite",
-      "An instinct for rhythm, pacing, and visual storytelling",
-      "Reliability and clear communication — we're a small team and every role counts",
-      "Genuine enthusiasm for African creative culture",
-    ],
-  },
-  {
-    title: "Content Creator",
-    type: "Contributor",
-    tag: "Creative",
-    summary:
-      "You're someone who lives and breathes creative culture and can translate that energy into content people stop scrolling for. This is a chance to build something real alongside a growing collective.",
-    whatYouDo: [
-      "Shoot and produce original content for our social platforms — on-location or studio-based",
-      "Contribute ideas to our content calendar and pitch concepts rooted in African culture",
-      "Collaborate with the team on interview setups, event coverage, and creative campaigns",
-      "Help maintain a consistent visual identity across all platforms",
-      "Be an active, creative voice within the Afro-Nated collective",
-    ],
-    whatWeLookFor: [
-      "A creative eye — whether you shoot on a phone or a professional camera, it's the vision that counts",
-      "Familiarity with social platforms and what content performs well on each",
-      "Energy, initiative, and the ability to work independently when needed",
-      "A passion for storytelling that centres African voices and perspectives",
-      "Willingness to grow with us and contribute to building something meaningful from the ground up",
+      "A strong portfolio that shows taste, storytelling, and attention to detail",
+      "Experience with Premiere Pro, DaVinci Resolve, or similar editing software",
+      "A good sense of pacing, rhythm, and visual flow",
+      "Clear communication and reliability",
+      "Genuine interest in African music, culture, and storytelling",
     ],
   },
   {
@@ -60,20 +39,20 @@ const ROLES: Role[] = [
     type: "Contributor",
     tag: "Strategy",
     summary:
-      "You think in systems, patterns, and narratives. You understand how content moves audiences and you want to apply that thinking to a brand with a clear cultural mission and a growing platform.",
+      "We're looking for a content strategist to help shape how Afro-Nated shows up across platforms and how our stories reach and resonate with people. This role is about thinking beyond individual posts — focusing on patterns, timing, audience behaviour, and how content builds over time.",
     whatYouDo: [
-      "Develop and manage a content calendar across YouTube, Instagram, TikTok, and Medium",
-      "Analyse performance data and translate findings into actionable strategy",
-      "Work with the team to align content output with brand goals and cultural moments",
-      "Identify growth opportunities, collaboration prospects, and emerging platform trends",
-      "Help build the Afro-Nated voice into something consistent, recognisable, and culturally grounded",
+      "Build and manage a content calendar across YouTube, Instagram, TikTok, and Medium",
+      "Track performance and translate insights into clear direction",
+      "Work with the team to align content with brand goals and cultural moments",
+      "Spot growth opportunities, collaborations, and emerging trends",
+      "Help shape a consistent and recognisable Afro-Nated voice",
     ],
     whatWeLookFor: [
-      "An understanding of how content strategy works across multiple platforms",
-      "Comfort with analytics — you know what the numbers are telling you",
-      "Strong written communication and the ability to articulate ideas clearly",
-      "A strategic mind paired with genuine cultural curiosity",
-      "Self-motivation and a long-term view — this is about building something that lasts",
+      "Understanding of how content strategy works across multiple platforms",
+      "Comfort working with analytics and interpreting what they mean",
+      "Clear, thoughtful communication",
+      "A strategic mindset with real curiosity about culture",
+      "Self-driven energy and a long-term approach to building something meaningful",
     ],
   },
 ];
@@ -91,11 +70,7 @@ const VALUES = [
   },
   {
     label: "Collective Ownership",
-    desc: "This isn't a job board for passive contributors. We want people invested in building the brand alongside us — not just doing a task.",
-  },
-  {
-    label: "Integrity",
-    desc: "We show up, we follow through, and we communicate when things change. Reliability and honesty are non-negotiable in a small team.",
+    desc: "Afro-Nated grows through collaboration, shared ideas, and people who genuinely care about what we're building. We value contributors who want to be part of the journey, bring their perspective to the table, and grow alongside the brand.",
   },
 ];
 
@@ -298,7 +273,7 @@ export function Careers() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {VALUES.map((v, i) => (
               <motion.div
                 key={v.label}
@@ -356,38 +331,6 @@ export function Careers() {
             ))}
           </div>
         </div>
-
-        {/* ── Note on contributor roles ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className={`border p-8 md:p-10 mb-16 ${
-            T.isDark ? "border-white/10" : "border-black/10"
-          }`}
-        >
-          <div className="w-8 h-[3px] bg-[#ef4444] mb-6" />
-          <h3
-            className={`text-xl font-bold mb-4 ${T.text}`}
-            style={{ fontFamily: "Montserrat, sans-serif" }}
-          >
-            A Note on How We Work
-          </h3>
-          <p className={`text-base leading-relaxed mb-4 ${T.textMuted}`}>
-            Afro-Nated is a self-sustained creative collective. Some of the roles
-            here are compensated — others are contributor positions where the value
-            is in the work itself, the community, the portfolio, and the shared
-            mission of building something that matters. We're transparent about
-            this because we respect your time and want to attract people who are
-            genuinely aligned with where we're going.
-          </p>
-          <p className={`text-base leading-relaxed ${T.textMuted}`}>
-            As the brand grows, so does the opportunity. We're not offering
-            permanence — we're offering the chance to be part of something at the
-            beginning, when it counts most.
-          </p>
-        </motion.div>
 
         {/* ── Future roles notice ── */}
         <motion.div
