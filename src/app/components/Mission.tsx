@@ -37,14 +37,26 @@ export function Mission() {
 
           <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6">
+            className="space-y-5">
             <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              We are a creative media collective dedicated to showcasing the richness, diversity, and innovation of African culture.
-              Through compelling interviews, documentaries, and visual storytelling, we bring authentic voices to the forefront.
+              Afro-Nated is a creative media platform focused on amplifying
+              African creatives through storytelling, interviews, and
+              culture-driven content.
             </p>
             <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              Afro-Nated challenges stereotypes, celebrates excellence, and creates a platform where African creatives —
-              entrepreneurs, artists, filmmakers, and visionaries — can share their stories with the world.
+              We highlight the people, sounds, and ideas shaping today's
+              creative scene — from emerging artists to established voices —
+              and present them in a way that feels honest, intentional, and
+              rooted in culture.
+            </p>
+            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
+              Through interviews, visual storytelling, and curated content,
+              we aim to spotlight African creativity and make it more visible
+              to wider audiences.
+            </p>
+            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
+              Afro-Nated exists to document, support, and amplify the
+              creative energy coming out of Africa.
             </p>
             <motion.a href="https://medium.com/@afro-nated" target="_blank" rel="noopener noreferrer"
               className={`group relative inline-flex items-center gap-3 hover:text-[#ef4444] transition-colors duration-300 pt-4 ${T.text}`}
