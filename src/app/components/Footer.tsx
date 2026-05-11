@@ -29,10 +29,10 @@ export function Footer() {
   };
 
   const quickLinks: Array<{ label: string; href?: string; action?: () => void }> = [
-    { label: "About",   action: () => goTo("mission")    },
+    { label: "About",   href: "/about"                   },
     { label: "Watch",   action: () => goTo("interviews") },
     { label: "Submit",  href: "/submit"                  },
-    { label: "Team",    action: () => goTo("team")       },
+    { label: "Team",    href: "/team"                    },
     { label: "Partner", href: "/partner"                 },
     { label: "Careers", href: "/careers"                 },
   ];
@@ -45,8 +45,19 @@ export function Footer() {
     { href: "https://x.com/AfroNated",              icon: <XIcon className="w-5 h-5"/>,       label: "X"         },
   ];
 
+  /*
+   * Footer background:
+   *   Dark mode  — #0d0d0d  (a warm near-black, one clear step above the page's pure #000000)
+   *   Light mode — #f0eeec  (a warm off-white / light stone, clearly distinct from the page's pure #ffffff)
+   *
+   * Both choices are subtle enough not to jar, but distinct enough that
+   * the footer reads as its own contained zone, separated by the top border.
+   */
+  const footerBg   = T.isDark ? "bg-[#0d0d0d]"  : "bg-[#f0eeec]";
+  const topBorder  = T.isDark ? "border-t border-white/[0.07]" : "border-t border-black/[0.08]";
+
   return (
-    <footer className={`relative py-20 md:py-32 px-4 md:px-8 overflow-hidden transition-colors duration-300 ${T.bg}`}>
+    <footer className={`relative py-20 md:py-32 px-4 md:px-8 overflow-hidden transition-colors duration-300 ${footerBg} ${topBorder}`}>
       {/* Ghosted background wordmark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.h2
