@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import { useT } from "../context/ThemeContext";
 import { MediumFeed } from "./MediumFeed";
 import { InstagramMosaic } from "./InstagramMosaic";
@@ -19,54 +20,61 @@ export function Mission() {
         }} />
       </div>
 
-      {/* ── Main two-column content ─────────────────────────────────── */}
+      {/* ── Punchline block ─────────────────────────────────────── */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8 }}>
-            <div className="mb-6">
-              <span className="inline-block px-3 py-1 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded text-[#ef4444] text-xs font-bold tracking-widest uppercase">
-                Our Mission
-              </span>
-            </div>
-            <h2 className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-none mb-6 ${T.text}`}>
-              REDEFINING<br />AFRICAN<br />NARRATIVES
-            </h2>
-            <div className="w-24 h-1 bg-[#ef4444]" />
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-5xl"
+        >
+          {/* Label */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-8 h-[3px] bg-[#ef4444]" />
+            <span className={`text-[10px] font-bold tracking-[0.25em] uppercase ${T.textFaint}`}>
+              Who We Are
+            </span>
+          </div>
 
-          <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-5">
-            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              Afro-Nated is a creative media platform focused on amplifying
-              African creatives through storytelling, interviews, and
-              culture-driven content.
-            </p>
-            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              We highlight the people, sounds, and ideas shaping today's
-              creative scene — from emerging artists to established voices —
-              and present them in a way that feels honest, intentional, and
-              rooted in culture.
-            </p>
-            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              Through interviews, visual storytelling, and curated content,
-              we aim to spotlight African creativity and make it more visible
-              to wider audiences.
-            </p>
-            <p className={`text-lg md:text-xl leading-relaxed ${T.textMuted}`}>
-              Afro-Nated exists to document, support, and amplify the
-              creative energy coming out of Africa.
-            </p>
-            <motion.a href="https://medium.com/@afro-nated" target="_blank" rel="noopener noreferrer"
-              className={`group relative inline-flex items-center gap-3 hover:text-[#ef4444] transition-colors duration-300 pt-4 ${T.text}`}
-              whileHover={{ x: 5 }}>
-              <span className="font-bold tracking-wide">READ OUR STORIES</span>
+          {/* Punchline — bold, single punchy statement */}
+          <h2
+            className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-[0.95] mb-10 ${T.text}`}
+            style={{ fontFamily: "Montserrat, sans-serif" }}
+          >
+            Africa's story,{" "}
+            <span className="text-[#ef4444]">told right.</span>
+          </h2>
+
+          {/* One-liner sub-statement */}
+          <p className={`text-lg md:text-xl max-w-2xl leading-relaxed mb-10 ${T.textMuted}`}>
+            We amplify African creatives — their sound, vision, and story — through interviews, short-form content, and editorial work that doesn't compromise.
+          </p>
+
+          {/* CTA row */}
+          <div className="flex flex-wrap items-center gap-6">
+            <motion.div whileHover={{ x: 5 }}>
+              <Link
+                to="/about"
+                className={`group inline-flex items-center gap-3 font-bold tracking-wide hover:text-[#ef4444] transition-colors duration-300 ${T.text}`}
+              >
+                <span>OUR FULL STORY</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+
+            <motion.a
+              href="https://medium.com/@afro-nated"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`group relative inline-flex items-center gap-3 hover:text-[#ef4444] transition-colors duration-300 pt-0 ${T.textMuted}`}
+              whileHover={{ x: 5 }}
+            >
+              <span className="font-medium tracking-wide">READ OUR STORIES</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ef4444] group-hover:w-full transition-all duration-300" />
             </motion.a>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
         {/* ── Medium article feed ──────────────────────────────────── */}
         <MediumFeed />

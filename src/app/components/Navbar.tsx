@@ -55,16 +55,26 @@ export function Navbar() {
 
   const closeMobile = () => setIsMobileMenuOpen(false);
 
-  const navLinks = isHome ? [
-    { label: "ABOUT", action: () => goToSection("mission") },
-    { label: "WATCH", action: () => goToSection("interviews") },
-    { label: "TEAM",  action: () => goToSection("team") },
-  ] : [
-    { label: "HOME",  action: () => { navigate("/"); closeMobile(); } },
-    { label: "ABOUT", action: () => goToSection("mission") },
-    { label: "WATCH", action: () => goToSection("interviews") },
-    { label: "TEAM",  action: () => goToSection("team") },
-  ];
+  /*
+   * Nav links:
+   *  - "About"  → /about  (dedicated about page)
+   *  - "Watch"  → #interviews section (scroll)
+   *  - "Team"   → /team   (dedicated team page)
+   *
+   * On non-home pages we also show "Home" as the first item.
+   */
+  const navLinks = isHome
+    ? [
+        { label: "ABOUT", href: "/about" },
+        { label: "WATCH", action: () => goToSection("interviews") },
+        { label: "TEAM",  href: "/team" },
+      ]
+    : [
+        { label: "HOME",  action: () => { navigate("/"); closeMobile(); } },
+        { label: "ABOUT", href: "/about" },
+        { label: "WATCH", action: () => goToSection("interviews") },
+        { label: "TEAM",  href: "/team" },
+      ];
 
   const socialLinks = [
     { href: "https://www.youtube.com/@Afronated",   icon: <Youtube className="w-4 h-4"/>,   label: "YouTube"   },
@@ -76,6 +86,26 @@ export function Navbar() {
 
   const linkCls = `text-sm font-medium transition-colors tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
   const mobileLinkCls = `w-full text-left px-4 py-3 rounded-lg transition-all font-medium tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
+
+  // Helper: render a nav item that may be either a Link or a button
+  const renderNavItem = (
+    item: { label: string; href?: string; action?: () => void },
+    cls: string,
+    extra?: React.ReactNode
+  ) => {
+    if (item.href) {
+      return (
+        <Link key={item.label} to={item.href} onClick={closeMobile} className={cls}>
+          {item.label}{extra}
+        </Link>
+      );
+    }
+    return (
+      <button key={item.label} onClick={() => { item.action?.(); closeMobile(); }} className={cls}>
+        {item.label}{extra}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -99,16 +129,13 @@ export function Navbar() {
             <AfronatedLogo className="h-7 md:h-8 lg:h-10 w-auto" style={{ maxWidth: 120 }} />
           </Link>
 
-          {/* ── Desktop nav links — visible only at lg+ (≥1024px) ── */}
+          {/* ── Desktop nav links — visible only at lg+ ── */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-            {navLinks.map(({ label, action }) => (
-              <button key={label} onClick={action} className={linkCls}>{label}</button>
-            ))}
+            {navLinks.map((item) => renderNavItem(item, linkCls))}
             <Link to="/submit"  onClick={closeMobile} className={linkCls}>SUBMIT</Link>
             <Link to="/partner" onClick={closeMobile} className={linkCls}>PARTNER</Link>
             <Link to="/careers" onClick={closeMobile} className={`${linkCls} relative`}>
               CAREERS
-              {/* Small red dot to draw attention to the new page */}
               <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
             </Link>
           </div>
@@ -154,9 +181,11 @@ export function Navbar() {
       >
         <div className={`backdrop-blur-xl border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${T.isDark ? "bg-black/95" : "bg-white/98"} ${T.border}`}>
           <div className="p-6 space-y-2">
-            {navLinks.map(({ label, action }) => (
-              <button key={label} onClick={() => { action(); closeMobile(); }} className={`block ${mobileLinkCls}`}>{label}</button>
-            ))}
+            {navLinks.map((item) =>
+              item.href
+                ? <Link key={item.label} to={item.href} onClick={closeMobile} className={`block ${mobileLinkCls}`}>{item.label}</Link>
+                : <button key={item.label} onClick={() => { item.action?.(); closeMobile(); }} className={`block ${mobileLinkCls}`}>{item.label}</button>
+            )}
             <Link to="/submit"  onClick={closeMobile} className={`block ${mobileLinkCls}`}>SUBMIT</Link>
             <Link to="/partner" onClick={closeMobile} className={`block ${mobileLinkCls}`}>PARTNER</Link>
             <Link to="/careers" onClick={closeMobile} className={`block ${mobileLinkCls} flex items-center gap-2`}>
