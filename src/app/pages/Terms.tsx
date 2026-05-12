@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 export function Terms() {
   const T = useT();

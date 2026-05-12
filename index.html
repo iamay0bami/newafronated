@@ -83,7 +83,7 @@
     }
     </script>
 
-    <!-- WebSite schema -->
+    <!-- WebSite schema with SearchAction -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -97,6 +97,20 @@
           "@type": "EntryPoint",
           "urlTemplate": "https://afronated.com/?q={search_term_string}"
         },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- SiteNavigationElement schema — tells crawlers your primary nav structure -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SiteLinksSearchBox",
+      "url": "https://afronated.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://afronated.com/?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
@@ -189,6 +203,35 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!--
+      noscript fallback — crawlers and users without JS see real content.
+      This also satisfies Bing's H1 requirement as a bare minimum signal.
+    -->
+    <noscript>
+      <style>
+        .noscript-wrap { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #000; color: #fff; }
+        .noscript-wrap h1 { font-size: 2.5rem; font-weight: 900; color: #fff; margin-bottom: 1rem; }
+        .noscript-wrap p  { color: rgba(255,255,255,0.7); line-height: 1.7; margin-bottom: 1rem; }
+        .noscript-wrap nav a { color: #ef4444; margin-right: 1.5rem; text-decoration: none; }
+      </style>
+      <div class="noscript-wrap">
+        <h1>Afronated — African Creative Media Collective</h1>
+        <p>
+          Afronated is a creative media collective amplifying African voices through powerful
+          storytelling, spotlight interviews, and cultural excellence.
+        </p>
+        <nav aria-label="Main navigation">
+          <a href="https://afronated.com/">Home</a>
+          <a href="https://afronated.com/about">About</a>
+          <a href="https://afronated.com/team">Team</a>
+          <a href="https://afronated.com/submit">Put Me On</a>
+          <a href="https://afronated.com/partner">Partner</a>
+          <a href="https://afronated.com/careers">Careers</a>
+        </nav>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

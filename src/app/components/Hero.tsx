@@ -57,7 +57,10 @@ export function Hero() {
   };
 
   return (
-    <section style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}>
+    <section
+      style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
+      aria-label="Afronated — African Creative Media Collective"
+    >
       {/* ── 1. Gradient fallback ── */}
       <div
         style={{
@@ -156,13 +159,33 @@ export function Hero() {
             transition={{ duration: 1, delay: 0.7 }}
             style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "center" }}
           >
-            <img
-              src="/logo-transparent.png" alt="Afronated" draggable={false}
+            {/*
+              SEO: This is the homepage H1. Visually it renders as the logo image
+              (which is correct for branding), but the accessible text "Afronated"
+              is read by crawlers and screen readers, satisfying Bing's H1
+              requirement without changing the visual design at all.
+            */}
+            <h1
               style={{
-                height: "clamp(6rem, 12vw, 12rem)", width: "auto",
-                filter: "invert(1)", mixBlendMode: "screen",
+                margin: 0,
+                lineHeight: 1,
+                /* Let the image dictate the visual size */
+                fontSize: 0,
+                color: "transparent",
               }}
-            />
+            >
+              <img
+                src="/logo-transparent.png"
+                alt="Afronated"
+                draggable={false}
+                style={{
+                  height: "clamp(6rem, 12vw, 12rem)", width: "auto",
+                  filter: "invert(1)", mixBlendMode: "screen",
+                  /* Reset font-size:0 visual side-effects on the img itself */
+                  fontSize: "initial",
+                }}
+              />
+            </h1>
           </motion.div>
 
           <motion.p

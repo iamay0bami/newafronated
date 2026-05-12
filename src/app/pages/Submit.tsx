@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 const SUCCESS_MSG = "The message has been delivered and the team would get back as soon as possible.";
 const EMAILJS_SERVICE_ID  = "service_9cs3rys";
@@ -65,7 +66,6 @@ function IntentCards() {
 
   return (
     <div className="mt-10 mb-2">
-      {/* Section label */}
       <div className="flex items-center gap-3 mb-5">
         <div className="w-5 h-px bg-[#ef4444]" />
         <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
@@ -73,7 +73,6 @@ function IntentCards() {
         </span>
       </div>
 
-      {/* Cards — 1 col on mobile, 3 col on md+ */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         {INTENT_TYPES.map((item, i) => (
           <motion.div
@@ -91,12 +90,10 @@ function IntentCards() {
                 : "border-black/8 hover:border-black/18"
             }`}
           >
-            {/* Accent left strip */}
             {item.accent && (
               <div className="absolute top-0 left-0 w-[3px] h-full bg-[#ef4444]" />
             )}
 
-            {/* Badge */}
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[9px] font-bold tracking-widest uppercase mb-3 ${
                 T.isDark ? item.badgeColor : item.badgeColorLight
@@ -105,7 +102,6 @@ function IntentCards() {
               {item.badge}
             </span>
 
-            {/* Title */}
             <h3
               className={`text-sm font-black tracking-tight mb-1.5 ${T.text}`}
               style={{ fontFamily: "Montserrat, sans-serif" }}
@@ -113,12 +109,10 @@ function IntentCards() {
               {item.label}
             </h3>
 
-            {/* Short desc */}
             <p className={`text-xs leading-relaxed mb-2 font-medium ${T.textMuted}`}>
               {item.desc}
             </p>
 
-            {/* Detail */}
             <p className={`text-[11px] leading-relaxed ${T.textFaint}`}>
               {item.detail}
             </p>
@@ -135,6 +129,13 @@ export function Submit() {
   const T = useT();
   const [formData, setFormData] = useState({ name: "", email: "", intention: "", socialHandle: "", message: "" });
   const [status, setStatus] = useState<"idle"|"sending"|"success"|"error">("idle");
+
+  useSEO({
+    title: "Put Me On — Submit Your Creative Work to Afronated",
+    description:
+      "Are you an African creative with work worth sharing? Submit to Afronated for a feature, spotlight, or collaboration opportunity.",
+    canonical: "https://afronated.com/submit",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) =>
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -180,7 +181,6 @@ export function Submit() {
     <section className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}>
       <div className="max-w-7xl mx-auto">
 
-        {/* ── Page header ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -199,7 +199,6 @@ export function Submit() {
           </h1>
         </motion.div>
 
-        {/* ── Two-column layout: left = info + intent cards, right = form ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
           {/* LEFT COLUMN */}
@@ -229,10 +228,8 @@ export function Submit() {
               ))}
             </ul>
 
-            {/* Intent clarification cards */}
             <IntentCards />
 
-            {/* Direct email fallback */}
             <div className={`mt-8 pt-6 border-t ${T.isDark ? "border-white/8" : "border-black/8"}`}>
               <p className={`mb-2 text-sm ${T.textFaint}`}>Or reach us directly at</p>
               <a
@@ -272,7 +269,6 @@ export function Submit() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
 
-                {/* Name */}
                 <div>
                   <label htmlFor="submit-name" className={labelCls}>Name *</label>
                   <input
@@ -289,7 +285,6 @@ export function Submit() {
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label htmlFor="submit-email" className={labelCls}>Email *</label>
                   <input
@@ -306,7 +301,6 @@ export function Submit() {
                   />
                 </div>
 
-                {/* Social handle */}
                 <div>
                   <label htmlFor="submit-social" className={labelCls}>Social Handle</label>
                   <input
@@ -322,7 +316,6 @@ export function Submit() {
                   />
                 </div>
 
-                {/* Intention */}
                 <div>
                   <label htmlFor="submit-intention" className={labelCls}>I want to... *</label>
                   <select
@@ -342,7 +335,6 @@ export function Submit() {
                   </select>
                 </div>
 
-                {/* Message */}
                 <div>
                   <label htmlFor="submit-message" className={labelCls}>Tell us more *</label>
                   <textarea

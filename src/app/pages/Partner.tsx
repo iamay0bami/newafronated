@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 const SUCCESS_MSG = "The message has been delivered and the team would get back as soon as possible.";
 const EMAILJS_SERVICE_ID  = "service_9cs3rys";

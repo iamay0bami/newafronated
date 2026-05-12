@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 // ─── Role data ────────────────────────────────────────────────────────────────
 
@@ -119,11 +120,9 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
           : "border-black/10 hover:border-[#ef4444]/40"
       }`}
     >
-      {/* Red left accent line */}
       <div className="absolute top-0 left-0 w-[3px] h-0 bg-[#ef4444] group-hover:h-full transition-all duration-500 ease-in-out" />
 
       <div className="p-8 md:p-10">
-        {/* Header row */}
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
             <p
@@ -141,13 +140,11 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
           <RoleBadge type={role.type} />
         </div>
 
-        {/* Summary */}
         <p className={`text-base leading-relaxed mb-8 ${T.textMuted}`}>
           {role.summary}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* What you'll do */}
           <div>
             <h4
               className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}
@@ -167,7 +164,6 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
             </ul>
           </div>
 
-          {/* What we look for */}
           <div>
             <h4
               className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}
@@ -192,7 +188,6 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
           </div>
         </div>
 
-        {/* Apply CTA */}
         <div
           className={`mt-10 pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
             T.isDark ? "border-white/8" : "border-black/8"
@@ -223,13 +218,19 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
 export function Careers() {
   const T = useT();
 
+  useSEO({
+    title: "Careers — Join the Afronated Collective",
+    description:
+      "Join Afronated — we're looking for video editors, content strategists, and creatives who want to help build a platform for African creative media.",
+    canonical: "https://afronated.com/careers",
+  });
+
   return (
     <section
       className={`min-h-screen pt-32 pb-24 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}
     >
       <div className="max-w-7xl mx-auto">
 
-        {/* ── Page header ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -256,7 +257,6 @@ export function Careers() {
           </p>
         </motion.div>
 
-        {/* ── Brand values ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -302,7 +302,6 @@ export function Careers() {
           </div>
         </motion.div>
 
-        {/* ── Roles ── */}
         <div className="mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -332,7 +331,6 @@ export function Careers() {
           </div>
         </div>
 
-        {/* ── Future roles notice ── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

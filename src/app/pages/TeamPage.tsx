@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Instagram, ArrowRight, X } from "lucide-react";
 import { Link } from "react-router";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 // ─── X (Twitter) icon ─────────────────────────────────────────────────────────
 
@@ -73,18 +74,6 @@ const TEAM_MEMBERS: TeamMember[] = [
 ];
 
 // ─── Bio Modal ────────────────────────────────────────────────────────────────
-//
-// Layout strategy:
-//
-// MOBILE  — Full portrait image at top (80vw tall, capped at 420px so the full
-//           face + shoulders are always visible), scrollable bio section below.
-//
-// DESKTOP — Single-column layout, NO split panel.
-//           A wide cinematic banner image (fixed ~340px tall) spans the full
-//           width of the modal with a bottom gradient fade, then the bio text
-//           sits below it in a clean scrollable area.  This completely removes
-//           the "empty space under a too-short photo" problem while keeping the
-//           visual feel natural and magazine-like.
 
 function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void }) {
   const T = useT();
@@ -127,19 +116,12 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
             <X className="w-4 h-4" />
           </button>
 
-          {/* ── Hero image — full width banner ── */}
-          {/*
-            Mobile:  80vw tall (capped 420px) — shows full face + shoulders
-            Desktop: fixed 320px tall — wide cinematic strip across modal top
-          */}
+          {/* ── Hero image ── */}
           <div
             className="relative w-full flex-shrink-0"
             style={{ height: "min(80vw, 420px)" }}
           >
-            {/* Desktop override via inline style on a pseudo-element isn't possible,
-                so we use a className approach with a responsive utility */}
             <div className="absolute inset-0 md:hidden">
-              {/* Mobile: object-top to show face */}
               <img
                 src={member.frontImage}
                 alt={member.name}
@@ -150,7 +132,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
               />
             </div>
             <div className="absolute inset-0 hidden md:block">
-              {/* Desktop: object-top as well but constrained height acts as cinematic crop */}
               <img
                 src={member.frontImage}
                 alt={member.name}
@@ -162,7 +143,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
               />
             </div>
 
-            {/* Gradient fade into modal body */}
             <div
               className={`absolute inset-0 bg-gradient-to-t ${
                 T.isDark
@@ -172,7 +152,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
               style={{ top: "40%" }}
             />
 
-            {/* Name overlay at bottom of image */}
             <div className="absolute bottom-0 left-0 right-0 px-7 pb-5">
               <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-1">
                 {member.role}
@@ -192,7 +171,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
             <div className="px-7 pb-8 pt-5">
               <div className="w-6 h-[3px] bg-[#ef4444] mb-6" />
 
-              {/* Bio paragraphs */}
               <div className="space-y-4">
                 {member.bio.map((para, i) => (
                   <p key={i} className={`text-sm md:text-base leading-relaxed ${T.textMuted}`}>
@@ -201,7 +179,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
                 ))}
               </div>
 
-              {/* Social links */}
               {(member.instagram || member.twitter) && (
                 <div
                   className={`flex flex-wrap gap-3 mt-8 pt-7 border-t ${
@@ -279,7 +256,6 @@ function MemberCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Photo */}
       <div className="relative overflow-hidden rounded-xl mb-5" style={{ aspectRatio: "3/4" }}>
         <motion.img
           src={member.frontImage}
@@ -347,6 +323,13 @@ function MemberCard({
 export function TeamPage() {
   const T = useT();
   const [selected, setSelected] = useState<TeamMember | null>(null);
+
+  useSEO({
+    title: "The Team — Afronated | African Creative Media Collective",
+    description:
+      "Meet the people behind Afronated — the founders, creatives, and strategists building a platform for African creative media and storytelling.",
+    canonical: "https://afronated.com/team",
+  });
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${T.bg} ${T.text}`}>

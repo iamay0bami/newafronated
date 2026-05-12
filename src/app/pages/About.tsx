@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 import { useT } from "../context/ThemeContext";
+import { useSEO } from "../hooks/useSEO";
 
 // ─── Section data ─────────────────────────────────────────────────────────────
 
@@ -65,6 +66,13 @@ function SectionLabel({ text }: { text: string }) {
 
 export function About() {
   const T = useT();
+
+  useSEO({
+    title: "About Afronated — African Creative Media Collective",
+    description:
+      "Learn about Afronated — a creative media collective built to spotlight African creatives, amplify their stories, and connect them to the audiences their work deserves.",
+    canonical: "https://afronated.com/about",
+  });
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${T.bg} ${T.text}`}>
