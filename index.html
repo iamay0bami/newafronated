@@ -102,7 +102,7 @@
     }
     </script>
 
-    <!-- BreadcrumbList -->
+    <!-- BreadcrumbList — covers all indexed pages -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -113,8 +113,73 @@
           "position": 1,
           "name": "Home",
           "item": "https://afronated.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About",
+          "item": "https://afronated.com/about"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Team",
+          "item": "https://afronated.com/team"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Submit",
+          "item": "https://afronated.com/submit"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Partner",
+          "item": "https://afronated.com/partner"
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "Careers",
+          "item": "https://afronated.com/careers"
         }
       ]
+    }
+    </script>
+
+    <!-- AboutPage schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "url": "https://afronated.com/about",
+      "name": "About Afronated",
+      "description": "Learn about Afronated — a creative media collective built to spotlight African creatives, amplify their stories, and connect them to the audiences their work deserves.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "url": "https://afronated.com"
+      }
+    }
+    </script>
+
+    <!-- Team CollectionPage schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "url": "https://afronated.com/team",
+      "name": "The Afronated Team",
+      "description": "Meet the people behind Afronated — the founders, creatives, and strategists building a platform for African creative media.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "url": "https://afronated.com"
+      },
+      "about": {
+        "@type": "Organization",
+        "name": "Afronated",
+        "url": "https://afronated.com"
+      }
     }
     </script>
 
