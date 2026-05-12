@@ -20,39 +20,6 @@ function useIsMobile() {
   return mobile;
 }
 
-// ─── Decorative audio visualizer ─────────────────────────────────────────────
-
-const BAR_HEIGHTS = [14, 22, 10, 28, 16, 24, 12];
-const BAR_DELAYS  = [0, 0.15, 0.3, 0.08, 0.22, 0.1, 0.35];
-
-function AudioVisualizer() {
-  return (
-    <div
-      className="absolute bottom-10 left-6 z-10 hidden md:flex items-end gap-[3px]"
-      aria-hidden="true"
-    >
-      {BAR_HEIGHTS.map((h, i) => (
-        <motion.div
-          key={i}
-          className="w-[3px] rounded-full bg-[#ef4444]/60"
-          style={{ height: h }}
-          animate={{
-            height: [h, h * 2.2, h * 0.6, h * 1.8, h],
-            opacity: [0.5, 0.9, 0.4, 0.85, 0.5],
-          }}
-          transition={{
-            duration: 1.4,
-            repeat: Infinity,
-            repeatType: "mirror",
-            ease: "easeInOut",
-            delay: BAR_DELAYS[i],
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 export function Hero() {
@@ -160,10 +127,7 @@ export function Hero() {
         }}
       />
 
-      {/* ── 5. Audio visualizer ── */}
-      <AudioVisualizer />
-
-      {/* ── 6. Hero content ── */}
+      {/* ── 5. Hero content ── */}
       <div
         style={{
           position: "relative", zIndex: 10, height: "100%",
@@ -224,8 +188,6 @@ export function Hero() {
           </motion.button>
         </div>
       </div>
-
-      {/* Scroll indicator intentionally removed */}
     </section>
   );
 }

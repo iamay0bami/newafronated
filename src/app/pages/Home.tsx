@@ -2,7 +2,6 @@ import { Hero } from "../components/Hero";
 import { Mission } from "../components/Mission";
 import { Interviews } from "../components/Interviews";
 import { TikTokDrop } from "../components/TikTokDrop";
-import { Team } from "../components/Team";
 import { useYouTubeVideos } from "../hooks/useYouTubeVideos";
 
 export function Home() {
@@ -19,7 +18,6 @@ export function Home() {
         shortsLoading={loading}
       />
       <TikTokDrop />
-      <Team />
     </main>
   );
 }

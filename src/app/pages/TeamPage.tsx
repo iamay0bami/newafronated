@@ -73,6 +73,18 @@ const TEAM_MEMBERS: TeamMember[] = [
 ];
 
 // ─── Bio Modal ────────────────────────────────────────────────────────────────
+//
+// Layout strategy:
+//
+// MOBILE  — Full portrait image at top (80vw tall, capped at 420px so the full
+//           face + shoulders are always visible), scrollable bio section below.
+//
+// DESKTOP — Single-column layout, NO split panel.
+//           A wide cinematic banner image (fixed ~340px tall) spans the full
+//           width of the modal with a bottom gradient fade, then the bio text
+//           sits below it in a clean scrollable area.  This completely removes
+//           the "empty space under a too-short photo" problem while keeping the
+//           visual feel natural and magazine-like.
 
 function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void }) {
   const T = useT();
@@ -89,11 +101,6 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
 
-        {/*
-          Modal layout:
-          - Mobile: full-width bottom sheet, image top + scrollable bio below
-          - Desktop: side-by-side — tall image left (~42%), scrollable bio right
-        */}
         <motion.div
           initial={{ opacity: 0, y: 60, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -101,8 +108,8 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className={`
             relative z-10 w-full
-            md:max-w-4xl md:max-h-[90vh]
-            flex flex-col md:flex-row
+            md:max-w-2xl
+            flex flex-col
             overflow-hidden
             rounded-t-2xl md:rounded-2xl
             border shadow-2xl
@@ -111,88 +118,79 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           style={{ maxHeight: "92vh" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ── Close button (always top-right) ── */}
+          {/* ── Close button ── */}
           <button
             onClick={onClose}
-            className={`
-              absolute top-4 right-4 z-30
-              w-9 h-9 rounded-full flex items-center justify-center
-              transition-all
-              ${T.isDark
-                ? "bg-black/60 hover:bg-white/15 text-white"
-                : "bg-white/80 hover:bg-black/10 text-black"}
-            `}
+            className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-black/50 hover:bg-black/70 text-white"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* ── LEFT / TOP: Photo panel ── */}
-          <div className="relative flex-shrink-0 w-full md:w-[42%]">
-            {/*
-              Mobile: tall enough to show the face properly — 65vw capped at 340px
-              Desktop: full height of the modal (stretches via md:h-full)
-            */}
-            <div
-              className="relative w-full md:h-full"
-              style={{ height: "min(65vw, 340px)" }}
-            >
+          {/* ── Hero image — full width banner ── */}
+          {/*
+            Mobile:  80vw tall (capped 420px) — shows full face + shoulders
+            Desktop: fixed 320px tall — wide cinematic strip across modal top
+          */}
+          <div
+            className="relative w-full flex-shrink-0"
+            style={{ height: "min(80vw, 420px)" }}
+          >
+            {/* Desktop override via inline style on a pseudo-element isn't possible,
+                so we use a className approach with a responsive utility */}
+            <div className="absolute inset-0 md:hidden">
+              {/* Mobile: object-top to show face */}
               <img
                 src={member.frontImage}
                 alt={member.name}
-                className="absolute inset-0 w-full h-full object-cover object-top md:object-center"
+                className="w-full h-full object-cover object-top"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
                 }}
               />
-
-              {/* Gradient — fades to bg colour at the bottom (mobile) / right edge (desktop) */}
-              <div
-                className={`
-                  absolute inset-0
-                  bg-gradient-to-t from-[#0d0d0d]/90 via-transparent to-transparent
-                  md:bg-gradient-to-r md:from-transparent md:via-transparent
-                  ${T.isDark
-                    ? "md:to-[#0d0d0d]/40"
-                    : "md:to-white/30"}
-                `}
+            </div>
+            <div className="absolute inset-0 hidden md:block">
+              {/* Desktop: object-top as well but constrained height acts as cinematic crop */}
+              <img
+                src={member.frontImage}
+                alt={member.name}
+                className="w-full h-full object-cover object-top"
+                style={{ objectPosition: "center 15%" }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
+                }}
               />
+            </div>
 
-              {/* Name overlay — mobile only (shown at bottom of image) */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 md:hidden">
-                <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-0.5">
-                  {member.role}
-                </p>
-                <h2
-                  className="text-2xl font-black text-white tracking-tight leading-tight"
-                  style={{ fontFamily: "Montserrat, sans-serif" }}
-                >
-                  {member.name}
-                </h2>
-                <p className="text-white/55 text-xs mt-0.5 italic">{member.tagline}</p>
-              </div>
+            {/* Gradient fade into modal body */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-t ${
+                T.isDark
+                  ? "from-[#0d0d0d] via-[#0d0d0d]/20 to-transparent"
+                  : "from-white via-white/20 to-transparent"
+              }`}
+              style={{ top: "40%" }}
+            />
+
+            {/* Name overlay at bottom of image */}
+            <div className="absolute bottom-0 left-0 right-0 px-7 pb-5">
+              <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-1">
+                {member.role}
+              </p>
+              <h2
+                className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight"
+                style={{ fontFamily: "Montserrat, sans-serif" }}
+              >
+                {member.name}
+              </h2>
+              <p className="text-white/55 text-xs mt-0.5 italic">{member.tagline}</p>
             </div>
           </div>
 
-          {/* ── RIGHT / BOTTOM: Scrollable bio content ── */}
+          {/* ── Scrollable bio content ── */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-7 md:p-10 pt-8 md:pt-10">
-
-              {/* Name block — desktop only */}
-              <div className="hidden md:block mb-8">
-                <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-1.5">
-                  {member.role}
-                </p>
-                <h2
-                  className={`text-3xl lg:text-4xl font-black tracking-tight leading-tight ${T.text}`}
-                  style={{ fontFamily: "Montserrat, sans-serif" }}
-                >
-                  {member.name}
-                </h2>
-                <p className={`text-sm mt-1.5 italic ${T.textFaint}`}>{member.tagline}</p>
-              </div>
-
-              <div className="w-6 h-[3px] bg-[#ef4444] mb-7" />
+            <div className="px-7 pb-8 pt-5">
+              <div className="w-6 h-[3px] bg-[#ef4444] mb-6" />
 
               {/* Bio paragraphs */}
               <div className="space-y-4">
