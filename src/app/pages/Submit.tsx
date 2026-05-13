@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../context/ThemeContext";
 import { useSEO } from "../hooks/useSEO";
+import { CustomSelect, type SelectOption } from "../components/ui/CustomSelect";
 
 const SUCCESS_MSG = "The message has been delivered and the team would get back as soon as possible.";
 const EMAILJS_SERVICE_ID  = "service_9cs3rys";
@@ -28,6 +29,26 @@ async function sendViaEmailJS(params: Record<string, string>) {
     throw new Error(`send failed: ${res.status} ${text}`);
   }
 }
+
+// ─── Select options ───────────────────────────────────────────────────────────
+
+const INTENTION_OPTIONS: SelectOption[] = [
+  {
+    value: "feature-spotlight",
+    label: "Feature / Spotlight — Submit my work for editorial consideration",
+    shortLabel: "Feature / Spotlight",
+  },
+  {
+    value: "collaborate",
+    label: "Collaboration — Mutual creative or audience project",
+    shortLabel: "Collaboration",
+  },
+  {
+    value: "paid-project",
+    label: "Paid Project — Commission an interview, production, or campaign",
+    shortLabel: "Paid Project",
+  },
+];
 
 // ─── Intent clarification cards ───────────────────────────────────────────────
 
@@ -63,7 +84,6 @@ const INTENT_TYPES = [
 
 function IntentCards() {
   const T = useT();
-
   return (
     <div className="mt-10 mb-2">
       <div className="flex items-center gap-3 mb-5">
@@ -72,7 +92,6 @@ function IntentCards() {
           How it works
         </span>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         {INTENT_TYPES.map((item, i) => (
           <motion.div
@@ -93,7 +112,6 @@ function IntentCards() {
             {item.accent && (
               <div className="absolute top-0 left-0 w-[3px] h-full bg-[#ef4444]" />
             )}
-
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[9px] font-bold tracking-widest uppercase mb-3 ${
                 T.isDark ? item.badgeColor : item.badgeColorLight
@@ -101,18 +119,15 @@ function IntentCards() {
             >
               {item.badge}
             </span>
-
             <h3
               className={`text-sm font-black tracking-tight mb-1.5 ${T.text}`}
               style={{ fontFamily: "Montserrat, sans-serif" }}
             >
               {item.label}
             </h3>
-
             <p className={`text-xs leading-relaxed mb-2 font-medium ${T.textMuted}`}>
               {item.desc}
             </p>
-
             <p className={`text-[11px] leading-relaxed ${T.textFaint}`}>
               {item.detail}
             </p>
@@ -127,8 +142,14 @@ function IntentCards() {
 
 export function Submit() {
   const T = useT();
-  const [formData, setFormData] = useState({ name: "", email: "", intention: "", socialHandle: "", message: "" });
-  const [status, setStatus] = useState<"idle"|"sending"|"success"|"error">("idle");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    intention: "",
+    socialHandle: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
   useSEO({
     title: "Put Me On — Submit Your Creative Work to Afronated",
@@ -137,8 +158,9 @@ export function Submit() {
     canonical: "https://afronated.com/submit",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) =>
-    setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,32 +184,25 @@ export function Submit() {
     }
   };
 
-  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${T.isDark ? "border-white/20 text-white placeholder:text-white/30" : "border-black/20 text-black placeholder:text-black/30"}`;
+  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${
+    T.isDark
+      ? "border-white/20 text-white placeholder:text-white/30"
+      : "border-black/20 text-black placeholder:text-black/30"
+  }`;
   const labelCls = `block text-xs font-medium tracking-wider uppercase mb-2 ${T.textFaint}`;
 
-  const selectArrowColor = T.isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.4)";
-  const selectStyle: React.CSSProperties = {
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(selectArrowColor)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 0 center",
-    backgroundSize: "24px",
-    paddingRight: "32px",
-    colorScheme: T.isDark ? "dark" : "light",
-    backgroundColor: T.isDark ? "#0a0a0a" : "#ffffff",
-    color: T.isDark ? "#ffffff" : "#000000",
-  };
-
   return (
-    <section className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}>
+    <section
+      className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}
+    >
       <div className="max-w-7xl mx-auto">
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-12 md:mb-16"
         >
-          <div className="w-12 h-1 bg-[#ef4444] mb-6"/>
+          <div className="w-12 h-1 bg-[#ef4444] mb-6" />
           <span className="inline-block px-4 py-2 bg-[#ef4444]/20 border border-[#ef4444]/40 rounded-full text-[#ef4444] text-xs font-bold tracking-widest uppercase mb-4">
             GET INVOLVED
           </span>
@@ -212,7 +227,6 @@ export function Submit() {
               Afro-Nated exists to spotlight and connect African creatives
               through storytelling, interviews, and culture-driven content.
             </p>
-
             <ul className={`space-y-3 mb-8 ${T.textMuted}`}>
               {[
                 "Submit your creative work or project",
@@ -220,16 +234,14 @@ export function Submit() {
                 "Propose a collaboration or creative partnership",
                 "Recommend a creative we should know about",
                 "Commission content production or campaign work",
-              ].map(t => (
+              ].map((t) => (
                 <li key={t} className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] mt-2 flex-shrink-0"/>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] mt-2 flex-shrink-0" />
                   <span className="text-sm md:text-base">{t}</span>
                 </li>
               ))}
             </ul>
-
             <IntentCards />
-
             <div className={`mt-8 pt-6 border-t ${T.isDark ? "border-white/8" : "border-black/8"}`}>
               <p className={`mb-2 text-sm ${T.textFaint}`}>Or reach us directly at</p>
               <a
@@ -255,10 +267,12 @@ export function Submit() {
               >
                 <div className="w-16 h-16 rounded-full bg-[#ef4444]/20 border border-[#ef4444]/40 flex items-center justify-center mx-auto">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2} className="w-8 h-8">
-                    <polyline points="20 6 9 17 4 12"/>
+                    <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <p className={`text-lg leading-relaxed max-w-md mx-auto ${T.textMuted}`}>{SUCCESS_MSG}</p>
+                <p className={`text-lg leading-relaxed max-w-md mx-auto ${T.textMuted}`}>
+                  {SUCCESS_MSG}
+                </p>
                 <button
                   onClick={() => setStatus("idle")}
                   className="mt-4 text-[#ef4444] hover:text-[#ef4444]/80 transition-colors text-sm font-medium tracking-wide uppercase"
@@ -270,7 +284,7 @@ export function Submit() {
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
 
                 <div>
-                  <label htmlFor="submit-name" className={labelCls}>Name *</label>
+                  <label htmlFor="submit-name" className={labelCls}>Name <span className="text-[#ef4444]">*</span></label>
                   <input
                     type="text"
                     id="submit-name"
@@ -286,7 +300,7 @@ export function Submit() {
                 </div>
 
                 <div>
-                  <label htmlFor="submit-email" className={labelCls}>Email *</label>
+                  <label htmlFor="submit-email" className={labelCls}>Email <span className="text-[#ef4444]">*</span></label>
                   <input
                     type="email"
                     id="submit-email"
@@ -316,27 +330,22 @@ export function Submit() {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="submit-intention" className={labelCls}>I want to... *</label>
-                  <select
-                    id="submit-intention"
-                    name="intention"
-                    required
-                    autoComplete="off"
-                    value={formData.intention}
-                    onChange={handleChange}
-                    className={inputCls + " appearance-none cursor-pointer"}
-                    style={selectStyle}
-                  >
-                    <option value="">Select...</option>
-                    <option value="feature-spotlight">Feature / Spotlight — Submit my work for editorial consideration</option>
-                    <option value="collaborate">Collaboration — Mutual creative or audience project</option>
-                    <option value="paid-project">Paid Project — Commission an interview, production, or campaign</option>
-                  </select>
-                </div>
+                {/* Custom styled select */}
+                <CustomSelect
+                  id="submit-intention"
+                  name="intention"
+                  label="I want to..."
+                  required
+                  placeholder="Select..."
+                  options={INTENTION_OPTIONS}
+                  value={formData.intention}
+                  onChange={(val) => setFormData((p) => ({ ...p, intention: val }))}
+                />
 
                 <div>
-                  <label htmlFor="submit-message" className={labelCls}>Tell us more *</label>
+                  <label htmlFor="submit-message" className={labelCls}>
+                    Tell us more <span className="text-[#ef4444]">*</span>
+                  </label>
                   <textarea
                     id="submit-message"
                     name="message"
@@ -353,7 +362,9 @@ export function Submit() {
                 {status === "error" && (
                   <p className="text-[#ef4444] text-sm">
                     Something went wrong. Please try again or email us directly at{" "}
-                    <a href="mailto:afronated@gmail.com" className="underline">afronated@gmail.com</a>.
+                    <a href="mailto:afronated@gmail.com" className="underline">
+                      afronated@gmail.com
+                    </a>.
                   </p>
                 )}
 

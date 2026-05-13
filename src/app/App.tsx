@@ -7,7 +7,7 @@ import { ThemeProvider, useT } from "./context/ThemeContext";
 function ThemedRoot() {
   const T = useT();
   return (
-    <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${T.bg} ${T.text}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${T.bg} ${T.text}`}>
       <RouterProvider router={router} />
     </div>
   );
