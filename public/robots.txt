@@ -1,4 +1,4 @@
-# robots.txt for Afronated
+# robots.txt for Afro-Nated
 User-agent: *
 Allow: /
 
