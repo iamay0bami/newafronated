@@ -83,36 +83,14 @@
     }
     </script>
 
-    <!-- WebSite schema with SearchAction -->
+    <!-- WebSite schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Afro-Nated",
       "alternateName": "Afro-Nated — African Creative Media Collective",
-      "url": "https://afronated.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://afronated.com/?q={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-
-    <!-- SiteNavigationElement schema — tells crawlers your primary nav structure -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SiteLinksSearchBox",
-      "url": "https://afronated.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://afronated.com/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "url": "https://afronated.com"
     }
     </script>
 
@@ -194,6 +172,58 @@
         "name": "Afro-Nated",
         "url": "https://afronated.com"
       }
+    }
+    </script>
+
+    <!-- JobPosting schema — Video Editor -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      "title": "Video Editor",
+      "description": "Edit interview content, short-form videos, and social media clips for Afro-Nated, a creative media collective amplifying African voices.",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": "Afro-Nated",
+        "sameAs": "https://afronated.com"
+      },
+      "employmentType": "CONTRACTOR",
+      "jobLocation": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "NG"
+        }
+      },
+      "datePosted": "2026-05-13",
+      "validThrough": "2026-12-31",
+      "url": "https://afronated.com/careers"
+    }
+    </script>
+
+    <!-- JobPosting schema — Content Strategist -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      "title": "Content Strategist",
+      "description": "Build and manage content calendars, track performance, and shape Afro-Nated's presence across YouTube, Instagram, TikTok, and Medium.",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": "Afro-Nated",
+        "sameAs": "https://afronated.com"
+      },
+      "employmentType": "VOLUNTEER",
+      "jobLocation": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "NG"
+        }
+      },
+      "datePosted": "2026-05-13",
+      "validThrough": "2026-12-31",
+      "url": "https://afronated.com/careers"
     }
     </script>
 

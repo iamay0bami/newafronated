@@ -2,30 +2,21 @@ import { useEffect, useState } from "react";
 import type { YTShort } from "../components/YouTubeShorts";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const YT_API_KEY    = "AIzaSyAixuU0sg_TtnQvDrwkMKRnyFtFmWoTcGI";
-const YT_CHANNEL_ID = "UCy6712z38Ovxm4gsf_yN1Rg";
+const YT_API_KEY    = import.meta.env.VITE_YT_API_KEY    as string | undefined;
+const YT_CHANNEL_ID = import.meta.env.VITE_YT_CHANNEL_ID as string | undefined;
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 // Videos ≤ 62 s  → Shorts shelf
 const SHORTS_MAX_SECONDS = 62;
 
 // Videos > 180 s (3 min) AND matching INTERVIEW_KEYWORDS → Interviews section.
-// Everything else (event clips, music videos, etc.) is intentionally excluded.
 const INTERVIEW_MIN_SECONDS = 180;
 
 /**
  * INTERVIEW DETECTION STRATEGY
  * ─────────────────────────────
  * Afronated names every interview episode "… | Behind The Creative …"
- * (confirmed across all six existing episodes).
- *
- * Filtering purely by duration breaks when the brand uploads long non-interview
- * content (event recaps, freestyle sets, etc.). Title-keyword detection is far
- * more reliable because:
- *   1. The brand already uses a consistent naming convention.
- *   2. It self-updates — new episodes auto-appear; other videos auto-exclude.
- *   3. It requires zero maintenance unless the brand renames their series.
- *
+ * We filter by that keyword + duration to identify interview content.
  * Add extra keywords here if the brand starts a second interview series.
  */
 const INTERVIEW_KEYWORDS = ["behind the creative"];
@@ -80,13 +71,26 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
   useEffect(() => {
     let cancelled = false;
 
+    // Bail out gracefully if env vars are not set (e.g. during local dev
+    // without a .env file). The hardcoded fallback videos in Interviews.tsx
+    // will be shown instead.
+    if (!YT_API_KEY || !YT_CHANNEL_ID) {
+      console.warn(
+        "[useYouTubeVideos] VITE_YT_API_KEY or VITE_YT_CHANNEL_ID is not set. " +
+        "Add them to your .env file locally or to Vercel Environment Variables in production. " +
+        "Falling back to hardcoded interview data."
+      );
+      setLoading(false);
+      return;
+    }
+
     async function fetchVideos() {
       try {
         // ── Step 1: uploads playlist ID ──────────────────────────────────────
         const channelUrl = new URL("https://www.googleapis.com/youtube/v3/channels");
         channelUrl.searchParams.set("part", "contentDetails");
-        channelUrl.searchParams.set("id", YT_CHANNEL_ID);
-        channelUrl.searchParams.set("key", YT_API_KEY);
+        channelUrl.searchParams.set("id", YT_CHANNEL_ID!);
+        channelUrl.searchParams.set("key", YT_API_KEY!);
 
         const channelRes = await fetch(channelUrl.toString());
         if (!channelRes.ok) throw new Error(`Channels API: ${channelRes.status}`);
@@ -100,7 +104,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
         playlistUrl.searchParams.set("part", "contentDetails");
         playlistUrl.searchParams.set("playlistId", uploadsPlaylist);
         playlistUrl.searchParams.set("maxResults", "50");
-        playlistUrl.searchParams.set("key", YT_API_KEY);
+        playlistUrl.searchParams.set("key", YT_API_KEY!);
 
         const playlistRes = await fetch(playlistUrl.toString());
         if (!playlistRes.ok) throw new Error(`Playlist API: ${playlistRes.status}`);
@@ -120,7 +124,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
         const videosUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
         videosUrl.searchParams.set("part", "snippet,contentDetails,statistics");
         videosUrl.searchParams.set("id", videoIds);
-        videosUrl.searchParams.set("key", YT_API_KEY);
+        videosUrl.searchParams.set("key", YT_API_KEY!);
 
         const videosRes = await fetch(videosUrl.toString());
         if (!videosRes.ok) throw new Error(`Videos API: ${videosRes.status}`);
@@ -181,7 +185,6 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           }));
 
         // ── Interviews: "Behind The Creative" episodes, > 3 min, up to 6 ────
-        // Newest-first is guaranteed by the uploads playlist order.
         const newLongForm: YTVideo[] = allVideos
           .filter((v) => !v.isShort && isInterview(v.title, v.durationSeconds))
           .slice(0, 6);

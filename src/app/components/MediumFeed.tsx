@@ -72,7 +72,6 @@ function ArticleCard({
       className="group flex-shrink-0 w-[280px] md:w-[320px] block"
       tabIndex={0}
       aria-label={article.title}
-      // Prevent link navigation while dragging
       onClick={(e) => {
         if ((e.currentTarget as HTMLElement).closest("[data-dragging='true']")) {
           e.preventDefault();
@@ -188,20 +187,27 @@ export function MediumFeed() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Autoscroll state
-  const [autoPaused, setAutoPaused] = useState(false);
+  // Respect prefers-reduced-motion — if the user has opted out of motion,
+  // we disable the autoscroll entirely and just show a static scrollable strip.
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
+
+  // Autoscroll state — starts paused if user prefers reduced motion
+  const [autoPaused, setAutoPaused] = useState(prefersReducedMotion);
 
   // Refs for the scrollable container (not the inner track)
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number | null>(null);
-  const scrollPosRef = useRef(0); // tracks our virtual scroll position
+  const scrollPosRef = useRef(0);
   const speedRef = useRef(0.6); // px per frame
 
   // Drag state
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
   const scrollStartRef = useRef(0);
-  const hasDraggedRef = useRef(false); // true if moved more than threshold
+  const hasDraggedRef = useRef(false);
   const lastClientXRef = useRef(0);
   const velocityRef = useRef(0);
   const momentumRef = useRef<number | null>(null);
@@ -241,19 +247,18 @@ export function MediumFeed() {
   }, []);
 
   // ── Autoscroll animation ──
-  // Uses scrollLeft on the container directly (simpler than transform on inner)
+  // Disabled entirely when prefersReducedMotion is true.
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const container = containerRef.current;
     if (!container || articles.length === 0) return;
 
-    // Wait a frame for layout
     const startRaf = requestAnimationFrame(() => {
       const tick = () => {
         if (!isDraggingRef.current && !autoPaused) {
           scrollPosRef.current += speedRef.current;
 
-          // Seamless loop: when we've scrolled past the first "copy",
-          // snap back by exactly half the scrollWidth
           const halfWidth = container.scrollWidth / 2;
           if (scrollPosRef.current >= halfWidth) {
             scrollPosRef.current -= halfWidth;
@@ -270,9 +275,9 @@ export function MediumFeed() {
       cancelAnimationFrame(startRaf);
       if (animRef.current !== null) cancelAnimationFrame(animRef.current);
     };
-  }, [articles, autoPaused]);
+  }, [articles, autoPaused, prefersReducedMotion]);
 
-  // ── Sync scrollPosRef when user manually scrolls (keyboard, etc.) ──
+  // ── Sync scrollPosRef when user manually scrolls ──
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -295,6 +300,13 @@ export function MediumFeed() {
 
   const applyMomentum = useCallback(() => {
     cancelMomentum();
+    if (prefersReducedMotion) {
+      // No momentum when reduced motion is preferred — just stop
+      scrollPosRef.current = containerRef.current?.scrollLeft ?? 0;
+      setAutoPaused(true); // stays paused; autoscroll is already disabled
+      return;
+    }
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -302,16 +314,14 @@ export function MediumFeed() {
 
     const step = () => {
       if (Math.abs(vel) < 0.3) {
-        // Momentum finished — resume autoscroll from current position
         scrollPosRef.current = container.scrollLeft;
         setAutoPaused(false);
         momentumRef.current = null;
         return;
       }
-      vel *= 0.92; // friction
+      vel *= 0.92;
       scrollPosRef.current = container.scrollLeft + vel;
 
-      // Loop
       const halfWidth = container.scrollWidth / 2;
       if (scrollPosRef.current >= halfWidth) scrollPosRef.current -= halfWidth;
       if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
@@ -320,7 +330,7 @@ export function MediumFeed() {
       momentumRef.current = requestAnimationFrame(step);
     };
     momentumRef.current = requestAnimationFrame(step);
-  }, [cancelMomentum]);
+  }, [cancelMomentum, prefersReducedMotion]);
 
   // ── Mouse drag handlers ──
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -332,7 +342,6 @@ export function MediumFeed() {
     scrollStartRef.current = containerRef.current?.scrollLeft ?? 0;
     velocityRef.current = 0;
     setAutoPaused(true);
-    // Prevent text selection while dragging
     e.preventDefault();
   }, [cancelMomentum]);
 
@@ -340,7 +349,7 @@ export function MediumFeed() {
     if (!isDraggingRef.current) return;
     const dx = e.clientX - lastClientXRef.current;
     lastClientXRef.current = e.clientX;
-    velocityRef.current = -dx; // invert: drag left = scroll right
+    velocityRef.current = -dx;
 
     const totalDx = e.clientX - dragStartXRef.current;
     if (Math.abs(totalDx) > 5) hasDraggedRef.current = true;
@@ -350,7 +359,6 @@ export function MediumFeed() {
 
     scrollPosRef.current = container.scrollLeft - dx;
 
-    // Loop boundaries
     const halfWidth = container.scrollWidth / 2;
     if (scrollPosRef.current >= halfWidth) scrollPosRef.current -= halfWidth;
     if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
@@ -365,9 +373,10 @@ export function MediumFeed() {
       applyMomentum();
     } else {
       scrollPosRef.current = containerRef.current?.scrollLeft ?? 0;
-      setAutoPaused(false);
+      // Only resume autoscroll if reduced motion is NOT preferred
+      if (!prefersReducedMotion) setAutoPaused(false);
     }
-  }, [applyMomentum]);
+  }, [applyMomentum, prefersReducedMotion]);
 
   // ── Touch handlers ──
   const onTouchStart = useCallback((e: React.TouchEvent) => {
@@ -401,7 +410,6 @@ export function MediumFeed() {
     if (scrollPosRef.current < 0) scrollPosRef.current += halfWidth;
 
     container.scrollLeft = scrollPosRef.current;
-    // Prevent page vertical scroll only if clearly horizontal
     if (Math.abs(dx) > 3) e.preventDefault();
   }, []);
 
@@ -412,11 +420,10 @@ export function MediumFeed() {
       applyMomentum();
     } else {
       scrollPosRef.current = containerRef.current?.scrollLeft ?? 0;
-      setAutoPaused(false);
+      if (!prefersReducedMotion) setAutoPaused(false);
     }
-  }, [applyMomentum]);
+  }, [applyMomentum, prefersReducedMotion]);
 
-  // ── Mouse leave (safety net) ──
   const onMouseLeave = useCallback(() => {
     if (isDraggingRef.current) {
       isDraggingRef.current = false;
@@ -426,8 +433,11 @@ export function MediumFeed() {
 
   if (error) return null;
 
+  // When reduced motion is preferred, only show one copy of articles (no infinite loop needed)
   const displayArticles = loading
     ? Array(5).fill(null)
+    : prefersReducedMotion
+    ? articles
     : [...articles, ...articles];
 
   return (
@@ -455,12 +465,11 @@ export function MediumFeed() {
         className="overflow-x-scroll w-full"
         style={{
           cursor: isDraggingRef.current ? "grabbing" : "grab",
-          scrollbarWidth: "none", // Firefox
-          msOverflowStyle: "none", // IE/Edge
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
           WebkitOverflowScrolling: "touch",
           userSelect: "none",
         }}
-        // Suppress scrollbar in webkit
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
@@ -469,7 +478,6 @@ export function MediumFeed() {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Hide webkit scrollbar via inline style tag trick */}
         <style>{`
           .medium-feed-strip::-webkit-scrollbar { display: none; }
         `}</style>
@@ -491,17 +499,19 @@ export function MediumFeed() {
         </div>
       </div>
 
-      {/* Hint label */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-        className="mt-3 flex justify-center"
-      >
-        <span className={`text-[10px] tracking-widest uppercase select-none ${T.textFaint}`}>
-          {autoPaused ? "— dragging —" : "← drag to browse →"}
-        </span>
-      </motion.div>
+      {/* Hint label — hidden when reduced motion is preferred (no autoscroll to hint about) */}
+      {!prefersReducedMotion && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mt-3 flex justify-center"
+        >
+          <span className={`text-[10px] tracking-widest uppercase select-none ${T.textFaint}`}>
+            {autoPaused ? "— dragging —" : "← drag to browse →"}
+          </span>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

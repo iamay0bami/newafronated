@@ -5,6 +5,14 @@ import { useSEO } from "../hooks/useSEO";
 export function Privacy() {
   const T = useT();
 
+  useSEO({
+    title: "Privacy Policy — Afro-Nated",
+    description:
+      "Afro-Nated's privacy policy — how we collect, use, and protect your personal information when you use our website and submit forms.",
+    canonical: "https://afronated.com/privacy",
+    noIndex: false,
+  });
+
   return (
     <section className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg}`}>
       <div className="max-w-4xl mx-auto">

@@ -5,6 +5,14 @@ import { useSEO } from "../hooks/useSEO";
 export function Terms() {
   const T = useT();
 
+  useSEO({
+    title: "Terms of Service — Afro-Nated",
+    description:
+      "Afro-Nated's terms of service — the rules and conditions that govern your use of our website and the services we provide.",
+    canonical: "https://afronated.com/terms",
+    noIndex: false,
+  });
+
   return (
     <section className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg}`}>
       <div className="max-w-4xl mx-auto">

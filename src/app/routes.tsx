@@ -8,6 +8,7 @@ import { Terms } from "./pages/Terms";
 import { Careers } from "./pages/Careers";
 import { About } from "./pages/About";
 import { TeamPage } from "./pages/TeamPage";
+import { NotFound } from "./pages/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: "careers",   Component: Careers  },
       { path: "privacy",   Component: Privacy  },
       { path: "terms",     Component: Terms    },
+      { path: "*",         Component: NotFound },
     ],
   },
 ]);
