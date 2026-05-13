@@ -30,12 +30,12 @@ interface SEOProps {
   noIndex?: boolean;      // Pass true for privacy/terms pages
 }
 
-const SITE_NAME    = "Afronated";
+const SITE_NAME    = "Afro-Nated";
 const DEFAULT_OG   = "https://afronated.com/og-image.jpg";
 const BASE_URL     = "https://afronated.com";
-const DEFAULT_TITLE = "Afronated — African Creative Media Collective";
+const DEFAULT_TITLE = "Afro-Nated — African Creative Media Collective";
 const DEFAULT_DESC  =
-  "Afronated is a creative media collective amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence. Based in Africa.";
+  "Afro-Nated is a creative media collective amplifying African voices through powerful storytelling, spotlight interviews, and cultural excellence. Based in Africa.";
 
 function setMeta(name: string, content: string, attr: "name" | "property" = "name") {
   let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
