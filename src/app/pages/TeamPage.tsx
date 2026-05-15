@@ -15,7 +15,7 @@ function XIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-// ─── Team data — full bios ────────────────────────────────────────────────────
+// ─── Team data ────────────────────────────────────────────────────────────────
 
 interface TeamMember {
   name: string;
@@ -40,8 +40,8 @@ const TEAM_MEMBERS: TeamMember[] = [
       "Beyond Afro-Nated, Onahi is driven by the long-term vision of building something that outlasts any single moment — an archive of African creativity that documents this generation's output with the seriousness it deserves.",
     ],
     frontImage: "/onahi-official.png",
-    backImage: "/onahi-party1.png",
-    instagram: "https://www.instagram.com/onahiijeh",
+    backImage:  "/onahi-party1.png",
+    instagram:  "https://www.instagram.com/onahiijeh",
   },
   {
     name: "Grace Otolorin",
@@ -54,8 +54,8 @@ const TEAM_MEMBERS: TeamMember[] = [
       "Grace's belief is simple: great creative work doesn't happen by accident. It happens because the right structures are in place to support the people doing it. She builds those structures.",
     ],
     frontImage: "/grace-front.png",
-    backImage: "/grace-back.png",
-    instagram: "https://www.instagram.com/graceotolorin",
+    backImage:  "/grace-back.png",
+    instagram:  "https://www.instagram.com/graceotolorin",
   },
   {
     name: "Veronica Emmanuel",
@@ -68,8 +68,8 @@ const TEAM_MEMBERS: TeamMember[] = [
       "She plays an important role in the collective's ability to maintain a consistent and credible presence across its growing range of channels and formats.",
     ],
     frontImage: "/veronica-back.png",
-    backImage: "/veronica-front.png",
-    instagram: "https://www.instagram.com/verah_skill_guild/",
+    backImage:  "/veronica-front.png",
+    instagram:  "https://www.instagram.com/verah_skill_guild/",
   },
 ];
 
@@ -96,10 +96,8 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           exit={{ opacity: 0, y: 30, scale: 0.97 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className={`
-            relative z-10 w-full
-            md:max-w-2xl
-            flex flex-col
-            overflow-hidden
+            relative z-10 w-full md:max-w-2xl
+            flex flex-col overflow-hidden
             rounded-t-2xl md:rounded-2xl
             border shadow-2xl
             ${T.isDark ? "bg-[#0d0d0d] border-white/10" : "bg-white border-black/10"}
@@ -107,28 +105,23 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           style={{ maxHeight: "92vh" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ── Close button ── */}
+          {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="Close bio"
             className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-black/50 hover:bg-black/70 text-white"
-            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* ── Hero image ── */}
-          <div
-            className="relative w-full flex-shrink-0"
-            style={{ height: "min(80vw, 420px)" }}
-          >
+          {/* Hero image */}
+          <div className="relative w-full flex-shrink-0" style={{ height: "min(80vw, 420px)" }}>
             <div className="absolute inset-0 md:hidden">
               <img
                 src={member.frontImage}
                 alt={member.name}
                 className="w-full h-full object-cover object-top"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
-                }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/onahi-official.png"; }}
               />
             </div>
             <div className="absolute inset-0 hidden md:block">
@@ -137,9 +130,7 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
                 alt={member.name}
                 className="w-full h-full object-cover object-top"
                 style={{ objectPosition: "center 15%" }}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
-                }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/onahi-official.png"; }}
               />
             </div>
 
@@ -166,11 +157,10 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
             </div>
           </div>
 
-          {/* ── Scrollable bio content ── */}
+          {/* Scrollable bio */}
           <div className="flex-1 overflow-y-auto">
             <div className="px-7 pb-8 pt-5">
               <div className="w-6 h-[3px] bg-[#ef4444] mb-6" />
-
               <div className="space-y-4">
                 {member.bio.map((para, i) => (
                   <p key={i} className={`text-sm md:text-base leading-relaxed ${T.textMuted}`}>
@@ -180,24 +170,15 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
               </div>
 
               {(member.instagram || member.twitter) && (
-                <div
-                  className={`flex flex-wrap gap-3 mt-8 pt-7 border-t ${
-                    T.isDark ? "border-white/8" : "border-black/8"
-                  }`}
-                >
+                <div className={`flex flex-wrap gap-3 mt-8 pt-7 border-t ${T.isDark ? "border-white/8" : "border-black/8"}`}>
                   {member.instagram && (
                     <a
                       href={member.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`
-                        inline-flex items-center gap-2 px-4 py-2.5 border rounded-lg
-                        text-sm font-medium transition-all
-                        hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white
-                        ${T.isDark
-                          ? "border-white/12 text-white/70"
-                          : "border-black/12 text-black/60"}
-                      `}
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white ${
+                        T.isDark ? "border-white/12 text-white/70" : "border-black/12 text-black/60"
+                      }`}
                     >
                       <Instagram className="w-4 h-4" />
                       Instagram
@@ -208,14 +189,9 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
                       href={member.twitter}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`
-                        inline-flex items-center gap-2 px-4 py-2.5 border rounded-lg
-                        text-sm font-medium transition-all
-                        hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white
-                        ${T.isDark
-                          ? "border-white/12 text-white/70"
-                          : "border-black/12 text-black/60"}
-                      `}
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white ${
+                        T.isDark ? "border-white/12 text-white/70" : "border-black/12 text-black/60"
+                      }`}
                     >
                       <XIcon className="w-4 h-4" />
                       X / Twitter
@@ -232,6 +208,10 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
 }
 
 // ─── Member Card ──────────────────────────────────────────────────────────────
+//
+// Previously used a <div> with onClick, which meant keyboard users couldn't
+// activate it with Enter or Space. Now uses a <button> element so it is
+// natively focusable and activatable via keyboard without any extra ARIA.
 
 function MemberCard({
   member,
@@ -251,69 +231,78 @@ function MemberCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.7, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="group cursor-pointer"
-      onClick={() => onSelect(member)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative overflow-hidden rounded-xl mb-5" style={{ aspectRatio: "3/4" }}>
-        <motion.img
-          src={member.frontImage}
-          alt={member.name}
-          draggable={false}
-          className="w-full h-full object-cover object-top"
-          animate={{ scale: hovered ? 1.05 : 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
-          }}
-        />
+      {/* ── Changed from div to button for full keyboard accessibility ── */}
+      <button
+        type="button"
+        className="w-full text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-xl"
+        onClick={() => onSelect(member)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        aria-label={`Read full bio for ${member.name}`}
+      >
+        <div className="relative overflow-hidden rounded-xl mb-5" style={{ aspectRatio: "3/4" }}>
+          <motion.img
+            src={member.frontImage}
+            alt={member.name}
+            draggable={false}
+            className="w-full h-full object-cover object-top"
+            animate={{ scale: hovered ? 1.05 : 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
+            }}
+          />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-        {[
-          "top-3 left-3 border-t-2 border-l-2",
-          "top-3 right-3 border-t-2 border-r-2",
-          "bottom-3 left-3 border-b-2 border-l-2",
-          "bottom-3 right-3 border-b-2 border-r-2",
-        ].map((cls, i) => (
-          <div key={i} className={`absolute w-4 h-4 border-[#ef4444]/50 ${cls} pointer-events-none`} />
-        ))}
+          {/* Corner accents */}
+          {[
+            "top-3 left-3 border-t-2 border-l-2",
+            "top-3 right-3 border-t-2 border-r-2",
+            "bottom-3 left-3 border-b-2 border-l-2",
+            "bottom-3 right-3 border-b-2 border-r-2",
+          ].map((cls, i) => (
+            <div key={i} className={`absolute w-4 h-4 border-[#ef4444]/50 ${cls} pointer-events-none`} />
+          ))}
 
-        <motion.div
-          className="absolute inset-0 bg-black/50 flex items-center justify-center"
-          animate={{ opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#ef4444] rounded-full text-white text-sm font-bold">
-            Read Bio
-            <ArrowRight className="w-4 h-4" />
-          </div>
-        </motion.div>
+          {/* Hover overlay */}
+          <motion.div
+            className="absolute inset-0 bg-black/50 flex items-center justify-center"
+            animate={{ opacity: hovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#ef4444] rounded-full text-white text-sm font-bold">
+              Read Bio
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </motion.div>
 
-        <motion.div
-          className="absolute inset-0 rounded-xl pointer-events-none"
-          animate={{
-            boxShadow: hovered
-              ? "inset 0 0 0 1.5px #ef4444, 0 0 30px rgba(239,68,68,0.2)"
-              : "inset 0 0 0 0px transparent",
-          }}
-          transition={{ duration: 0.25 }}
-        />
-      </div>
+          {/* Border glow */}
+          <motion.div
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            animate={{
+              boxShadow: hovered
+                ? "inset 0 0 0 1.5px #ef4444, 0 0 30px rgba(239,68,68,0.2)"
+                : "inset 0 0 0 0px transparent",
+            }}
+            transition={{ duration: 0.25 }}
+          />
+        </div>
 
-      <div>
-        <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-1">
-          {member.role}
-        </p>
-        <h3
-          className={`text-xl md:text-2xl font-black tracking-tight ${T.text}`}
-          style={{ fontFamily: "Montserrat, sans-serif" }}
-        >
-          {member.name}
-        </h3>
-        <p className={`text-sm mt-1 italic ${T.textFaint}`}>{member.tagline}</p>
-      </div>
+        <div>
+          <p className="text-[#ef4444] text-[10px] font-bold tracking-widest uppercase mb-1">
+            {member.role}
+          </p>
+          <h3
+            className={`text-xl md:text-2xl font-black tracking-tight ${T.text}`}
+            style={{ fontFamily: "Montserrat, sans-serif" }}
+          >
+            {member.name}
+          </h3>
+          <p className={`text-sm mt-1 italic ${T.textFaint}`}>{member.tagline}</p>
+        </div>
+      </button>
     </motion.div>
   );
 }
@@ -334,7 +323,7 @@ export function TeamPage() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${T.bg} ${T.text}`}>
 
-      {/* ── Page hero ── */}
+      {/* Page hero */}
       <section className="relative pt-40 pb-20 md:pt-52 md:pb-28 px-4 md:px-8 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -347,7 +336,11 @@ export function TeamPage() {
         />
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <div className="w-12 h-[3px] bg-[#ef4444] mb-8" />
             <span className="inline-block px-4 py-2 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded-full text-[#ef4444] text-xs font-bold tracking-widest uppercase mb-8">
               The Collective
@@ -389,7 +382,7 @@ export function TeamPage() {
         />
       </section>
 
-      {/* ── Team grid ── */}
+      {/* Team grid */}
       <section className="pb-32 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.p
@@ -415,7 +408,7 @@ export function TeamPage() {
         </div>
       </section>
 
-      {/* ── Join CTA ── */}
+      {/* Join CTA */}
       <section
         className={`py-24 px-4 md:px-8 border-t ${
           T.isDark ? "border-white/8 bg-[#0a0a0a]" : "border-black/8 bg-[#f7f5f3]"

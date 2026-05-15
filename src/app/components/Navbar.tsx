@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Youtube, Instagram, Menu, X } from "lucide-react";
 import { FaTiktok, FaMedium } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AfronatedLogo } from "./AfronatedLogo";
 import { useT } from "../context/ThemeContext";
 
@@ -17,18 +17,18 @@ function XIcon({ className = "w-4 h-4" }: { className?: string }) {
 function SunIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
     </svg>
   );
 }
 function MoonIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
 }
@@ -41,28 +41,37 @@ export function Navbar() {
 
   const isHome = location.pathname === "/";
 
+  // ── Cross-page scroll fix ────────────────────────────────────────────────────
+  // Instead of a setTimeout race, we store the target section ID and scroll to
+  // it inside a useEffect that fires after the route has actually changed and
+  // React has re-rendered the home page with the target element present.
+  const pendingScrollRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;
+    const id = pendingScrollRef.current;
+    pendingScrollRef.current = null;
+
+    // Use requestAnimationFrame to ensure the DOM has painted before scrolling
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+  }, [location.pathname]);
+
   const goToSection = (id: string) => {
     setIsMobileMenuOpen(false);
     if (isHome) {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     } else {
+      pendingScrollRef.current = id;
       navigate("/");
-      setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-      }, 120);
     }
   };
 
   const closeMobile = () => setIsMobileMenuOpen(false);
 
-  /*
-   * Nav links:
-   *  - "About"  → /about  (dedicated about page)
-   *  - "Watch"  → #interviews section (scroll)
-   *  - "Team"   → /team   (dedicated team page)
-   *
-   * On non-home pages we also show "Home" as the first item.
-   */
   const navLinks = isHome
     ? [
         { label: "ABOUT", href: "/about" },
@@ -77,17 +86,16 @@ export function Navbar() {
       ];
 
   const socialLinks = [
-    { href: "https://www.youtube.com/@Afronated",   icon: <Youtube className="w-4 h-4"/>,   label: "YouTube"   },
-    { href: "https://www.instagram.com/afro.nated", icon: <Instagram className="w-4 h-4"/>, label: "Instagram" },
-    { href: "https://x.com/AfroNated",              icon: <XIcon className="w-4 h-4"/>,      label: "X"         },
-    { href: "https://medium.com/@afro-nated",       icon: <FaMedium className="w-4 h-4"/>,  label: "Medium"    },
-    { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4"/>,  label: "TikTok"    },
+    { href: "https://www.youtube.com/@Afronated",   icon: <Youtube className="w-4 h-4" />,   label: "YouTube"   },
+    { href: "https://www.instagram.com/afro.nated", icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
+    { href: "https://x.com/AfroNated",              icon: <XIcon className="w-4 h-4" />,      label: "X"         },
+    { href: "https://medium.com/@afro-nated",       icon: <FaMedium className="w-4 h-4" />,  label: "Medium"    },
+    { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4" />,  label: "TikTok"    },
   ];
 
   const linkCls = `text-sm font-medium transition-colors tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
   const mobileLinkCls = `w-full text-left px-4 py-3 rounded-lg transition-all font-medium tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
 
-  // Helper: render a nav item that may be either a Link or a button
   const renderNavItem = (
     item: { label: string; href?: string; action?: () => void },
     cls: string,
@@ -110,13 +118,15 @@ export function Navbar() {
   return (
     <>
       <motion.nav
-        initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 md:px-8"
       >
-        <div className={`flex items-center justify-between w-full max-w-6xl px-4 md:px-6 lg:px-8 py-3 md:py-4 rounded-full backdrop-blur-xl border shadow-2xl transition-colors duration-300 ${T.bgNav}`}>
-
-          {/* ── Logo ── */}
+        <div
+          className={`flex items-center justify-between w-full max-w-6xl px-4 md:px-6 lg:px-8 py-3 md:py-4 rounded-full backdrop-blur-xl border shadow-2xl transition-colors duration-300 ${T.bgNav}`}
+        >
+          {/* Logo */}
           <Link
             to="/"
             onClick={() => {
@@ -129,7 +139,7 @@ export function Navbar() {
             <AfronatedLogo className="h-7 md:h-8 lg:h-10 w-auto" style={{ maxWidth: 120 }} />
           </Link>
 
-          {/* ── Desktop nav links — visible only at lg+ ── */}
+          {/* Desktop nav links */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((item) => renderNavItem(item, linkCls))}
             <Link to="/submit"  onClick={closeMobile} className={linkCls}>SUBMIT</Link>
@@ -140,46 +150,56 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* ── Right cluster: social icons + theme toggle + hamburger ── */}
+          {/* Right cluster */}
           <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3">
-
-            {/* Social icons — hidden on mobile, visible from md+ */}
             <div className="hidden md:flex lg:hidden items-center gap-2">
               {socialLinks.slice(0, 3).map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-                   className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
+                  className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
               ))}
             </div>
             <div className="hidden lg:flex items-center gap-2 xl:gap-3">
               {socialLinks.map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-                   className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
+                  className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
               ))}
             </div>
 
-            {/* Theme toggle */}
-            <button onClick={T.toggleTheme} aria-label="Toggle theme"
-              className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all border ${T.border} ${T.iconColor} hover:text-[#ef4444]`}>
+            <button
+              onClick={T.toggleTheme}
+              aria-label="Toggle theme"
+              className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all border ${T.border} ${T.iconColor} hover:text-[#ef4444]`}
+            >
               {T.isDark ? <SunIcon /> : <MoonIcon />}
             </button>
 
-            {/* Hamburger — shown below lg */}
-            <button onClick={() => setIsMobileMenuOpen(o => !o)} aria-label="Toggle menu"
-              className={`lg:hidden transition-colors ${T.textMuted}`}>
-              {isMobileMenuOpen ? <X className="w-6 h-6"/> : <Menu className="w-6 h-6"/>}
+            <button
+              onClick={() => setIsMobileMenuOpen((o) => !o)}
+              aria-label="Toggle menu"
+              className={`lg:hidden transition-colors ${T.textMuted}`}
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </motion.nav>
 
-      {/* ── Mobile / tablet slide-down menu ── */}
+      {/* Mobile menu */}
       <motion.div
         initial={false}
-        animate={{ opacity: isMobileMenuOpen ? 1 : 0, y: isMobileMenuOpen ? 0 : -20, pointerEvents: isMobileMenuOpen ? "auto" : "none" }}
+        animate={{
+          opacity: isMobileMenuOpen ? 1 : 0,
+          y: isMobileMenuOpen ? 0 : -20,
+          pointerEvents: isMobileMenuOpen ? "auto" : "none",
+        }}
         transition={{ duration: 0.3 }}
         className="fixed top-24 left-0 right-0 z-40 lg:hidden px-4"
       >
-        <div className={`backdrop-blur-xl border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${T.isDark ? "bg-black/95" : "bg-white/98"} ${T.border}`}>
+        <div
+          className={`backdrop-blur-xl border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${
+            T.isDark ? "bg-black/95" : "bg-white/98"
+          } ${T.border}`}
+        >
           <div className="p-6 space-y-2">
             {navLinks.map((item) =>
               item.href
@@ -196,14 +216,23 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className={`h-px ${T.isDark ? "bg-white/10" : "bg-black/10"}`}/>
+          <div className={`h-px ${T.isDark ? "bg-white/10" : "bg-black/10"}`} />
 
           <div className="p-6">
             <p className={`text-xs uppercase tracking-wider mb-4 ${T.textFaint}`}>Connect With Us</p>
             <div className="flex flex-wrap gap-3">
               {socialLinks.map(({ href, icon, label }) => (
-                <a key={href} href={href} target="_blank" rel="noopener noreferrer"
-                   className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all hover:text-[#ef4444] hover:border-[#ef4444] ${T.isDark ? "bg-white/5 border-white/10 text-white/60" : "bg-black/5 border-black/10 text-black/50"}`}>
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all hover:text-[#ef4444] hover:border-[#ef4444] ${
+                    T.isDark
+                      ? "bg-white/5 border-white/10 text-white/60"
+                      : "bg-black/5 border-black/10 text-black/50"
+                  }`}
+                >
                   {icon}<span className="text-sm">{label}</span>
                 </a>
               ))}
@@ -213,9 +242,13 @@ export function Navbar() {
       </motion.div>
 
       {isMobileMenuOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
-          onClick={closeMobile}/>
+          onClick={closeMobile}
+        />
       )}
     </>
   );

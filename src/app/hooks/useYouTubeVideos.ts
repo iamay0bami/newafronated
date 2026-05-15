@@ -1,25 +1,27 @@
 import { useEffect, useState } from "react";
 import type { YTShort } from "../components/YouTubeShorts";
+import { sessionCache } from "../utils/sessionCache";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
+//
+// On Vercel: Project → Settings → Environment Variables
+//   VITE_YT_API_KEY      → your YouTube Data API v3 key
+//   VITE_YT_CHANNEL_ID   → UCy6712z38Ovxm4gsf_yN1Rg
+//
+// Locally: create a .env file at the project root:
+//   VITE_YT_API_KEY=AIzaSy...
+//   VITE_YT_CHANNEL_ID=UCy6712z38Ovxm4gsf_yN1Rg
+//
 const YT_API_KEY    = import.meta.env.VITE_YT_API_KEY    as string | undefined;
 const YT_CHANNEL_ID = import.meta.env.VITE_YT_CHANNEL_ID as string | undefined;
 
+// ─── Cache key ────────────────────────────────────────────────────────────────
+const CACHE_KEY = "afronated:youtube-videos";
+
 // ─── Thresholds ───────────────────────────────────────────────────────────────
-// Videos ≤ 62 s  → Shorts shelf
-const SHORTS_MAX_SECONDS = 62;
-
-// Videos > 180 s (3 min) AND matching INTERVIEW_KEYWORDS → Interviews section.
+const SHORTS_MAX_SECONDS   = 62;
 const INTERVIEW_MIN_SECONDS = 180;
-
-/**
- * INTERVIEW DETECTION STRATEGY
- * ─────────────────────────────
- * Afronated names every interview episode "… | Behind The Creative …"
- * We filter by that keyword + duration to identify interview content.
- * Add extra keywords here if the brand starts a second interview series.
- */
-const INTERVIEW_KEYWORDS = ["behind the creative"];
+const INTERVIEW_KEYWORDS    = ["behind the creative"];
 
 function isInterview(title: string, durationSeconds: number): boolean {
   if (durationSeconds < INTERVIEW_MIN_SECONDS) return false;
@@ -53,11 +55,18 @@ function parseISO8601(duration: string): number {
   return h * 3600 + m * 60 + s;
 }
 
+// ─── Cached result shape ──────────────────────────────────────────────────────
+
+interface CachedResult {
+  shorts:   YTShort[];
+  longForm: YTVideo[];
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export interface UseYouTubeVideosResult {
   shorts:   YTShort[];
-  longForm: YTVideo[];   // interview episodes only
+  longForm: YTVideo[];
   loading:  boolean;
   error:    boolean;
 }
@@ -71,13 +80,20 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
   useEffect(() => {
     let cancelled = false;
 
-    // Bail out gracefully if env vars are not set (e.g. during local dev
-    // without a .env file). The hardcoded fallback videos in Interviews.tsx
-    // will be shown instead.
+    // ── Check cache first ────────────────────────────────────────────────────
+    const cached = sessionCache.get<CachedResult>(CACHE_KEY);
+    if (cached) {
+      setShorts(cached.shorts);
+      setLongForm(cached.longForm);
+      setLoading(false);
+      return;
+    }
+
+    // ── Bail out if env vars are missing ────────────────────────────────────
     if (!YT_API_KEY || !YT_CHANNEL_ID) {
       console.warn(
         "[useYouTubeVideos] VITE_YT_API_KEY or VITE_YT_CHANNEL_ID is not set. " +
-        "Add them to your .env file locally or to Vercel Environment Variables in production. " +
+        "Add them to your .env file locally or to Vercel Environment Variables. " +
         "Falling back to hardcoded interview data."
       );
       setLoading(false);
@@ -86,7 +102,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
 
     async function fetchVideos() {
       try {
-        // ── Step 1: uploads playlist ID ──────────────────────────────────────
+        // Step 1: uploads playlist ID
         const channelUrl = new URL("https://www.googleapis.com/youtube/v3/channels");
         channelUrl.searchParams.set("part", "contentDetails");
         channelUrl.searchParams.set("id", YT_CHANNEL_ID!);
@@ -99,7 +115,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           channelData?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? "";
         if (!uploadsPlaylist) throw new Error("Uploads playlist not found");
 
-        // ── Step 2: latest 50 video IDs ──────────────────────────────────────
+        // Step 2: latest 50 video IDs
         const playlistUrl = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
         playlistUrl.searchParams.set("part", "contentDetails");
         playlistUrl.searchParams.set("playlistId", uploadsPlaylist);
@@ -120,7 +136,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           .filter(Boolean)
           .join(",");
 
-        // ── Step 3: full video details ────────────────────────────────────────
+        // Step 3: full video details
         const videosUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
         videosUrl.searchParams.set("part", "snippet,contentDetails,statistics");
         videosUrl.searchParams.set("id", videoIds);
@@ -129,26 +145,22 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
         const videosRes = await fetch(videosUrl.toString());
         if (!videosRes.ok) throw new Error(`Videos API: ${videosRes.status}`);
         const videosData = await videosRes.json();
-        const videoItems: Array<Record<string, unknown>> =
-          videosData?.items ?? [];
+        const videoItems: Array<Record<string, unknown>> = videosData?.items ?? [];
 
         if (cancelled) return;
 
-        // ── Step 4: map + classify ────────────────────────────────────────────
+        // Step 4: map + classify
         const allVideos: YTVideo[] = videoItems.map((v) => {
           const snippet        = (v.snippet        ?? {}) as Record<string, unknown>;
           const contentDetails = (v.contentDetails ?? {}) as Record<string, unknown>;
           const statistics     = (v.statistics     ?? {}) as Record<string, unknown>;
 
-          const title       = String(snippet?.title ?? "");
-          const description = String(snippet?.description ?? "");
-          const duration    = String(contentDetails?.duration ?? "PT0S");
+          const title           = String(snippet?.title ?? "");
+          const description     = String(snippet?.description ?? "");
+          const duration        = String(contentDetails?.duration ?? "PT0S");
           const durationSeconds = parseISO8601(duration);
 
-          const thumbs = (snippet?.thumbnails ?? {}) as Record<
-            string,
-            { url: string }
-          >;
+          const thumbs = (snippet?.thumbnails ?? {}) as Record<string, { url: string }>;
           const thumbnail =
             thumbs?.maxres?.url ??
             thumbs?.standard?.url ??
@@ -172,7 +184,6 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
           };
         });
 
-        // ── Shorts: ≤ 62 s, up to 8 ─────────────────────────────────────────
         const newShorts: YTShort[] = allVideos
           .filter((v) => v.isShort)
           .slice(0, 8)
@@ -184,10 +195,15 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
             viewCount: v.viewCount,
           }));
 
-        // ── Interviews: "Behind The Creative" episodes, > 3 min, up to 6 ────
         const newLongForm: YTVideo[] = allVideos
           .filter((v) => !v.isShort && isInterview(v.title, v.durationSeconds))
           .slice(0, 6);
+
+        // ── Store in cache ───────────────────────────────────────────────────
+        sessionCache.set<CachedResult>(CACHE_KEY, {
+          shorts:   newShorts,
+          longForm: newLongForm,
+        });
 
         setShorts(newShorts);
         setLongForm(newLongForm);
@@ -200,9 +216,7 @@ export function useYouTubeVideos(): UseYouTubeVideosResult {
     }
 
     fetchVideos();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return { shorts, longForm, loading, error };

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
 import { Instagram, ArrowUpRight, Play } from "lucide-react";
 import { useT } from "../context/ThemeContext";
+import { sessionCache } from "../utils/sessionCache";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,8 +14,10 @@ interface InstaPost {
   mediaType: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
 }
 
-// ─── Behold.so widget config ──────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
+
 const BEHOLD_WIDGET_ID = "RnYIoNYflGt00tl3LIWy";
+const CACHE_KEY        = "afronated:instagram-posts";
 
 const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
   id: String(i),
@@ -24,23 +27,15 @@ const PLACEHOLDER_POSTS: InstaPost[] = Array.from({ length: 6 }, (_, i) => ({
   mediaType: "IMAGE",
 }));
 
-// ─── Mosaic layout — 6 tiles in a 3-col asymmetric grid ───────────────────────
-//
-//  ┌──────────┬────┬────┐
-//  │          │  2 │  3 │
-//  │    1     ├────┴────┤
-//  │  (tall)  │   4     │
-//  ├────┬─────┴─────────┤
-//  │ 5  │     6         │
-//  └────┴───────────────┘
+// ─── Mosaic layout ────────────────────────────────────────────────────────────
 
 const MOSAIC_LAYOUT = [
-  { col: "col-span-2 row-span-2", delay: 0 },
-  { col: "col-span-1 row-span-1", delay: 0.08 },
-  { col: "col-span-1 row-span-1", delay: 0.16 },
-  { col: "col-span-2 row-span-1", delay: 0.24 },
-  { col: "col-span-1 row-span-1", delay: 0.32 },
-  { col: "col-span-2 row-span-1", delay: 0.4 },
+  { col: "col-span-2 row-span-2", delay: 0      },
+  { col: "col-span-1 row-span-1", delay: 0.08   },
+  { col: "col-span-1 row-span-1", delay: 0.16   },
+  { col: "col-span-2 row-span-1", delay: 0.24   },
+  { col: "col-span-1 row-span-1", delay: 0.32   },
+  { col: "col-span-2 row-span-1", delay: 0.4    },
 ];
 
 // ─── Single tile ──────────────────────────────────────────────────────────────
@@ -72,25 +67,14 @@ function MosaicTile({
           ? { opacity: 1, scale: 1, filter: "blur(0px)" }
           : { opacity: 0, scale: 0.88, filter: "blur(8px)" }
       }
-      transition={{
-        duration: 0.65,
-        delay: layout.delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      transition={{ duration: 0.65, delay: layout.delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {isEmpty ? (
-        <div
-          className={`w-full h-full min-h-[80px] animate-pulse ${
-            T.isDark ? "bg-white/5" : "bg-black/5"
-          }`}
-        >
+        <div className={`w-full h-full min-h-[80px] animate-pulse ${T.isDark ? "bg-white/5" : "bg-black/5"}`}>
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
               <div className="w-5 h-[2px] bg-[#ef4444] mx-auto mb-2" />
-              <Instagram
-                className={`w-5 h-5 mx-auto ${T.textFaint}`}
-                strokeWidth={1}
-              />
+              <Instagram className={`w-5 h-5 mx-auto ${T.textFaint}`} strokeWidth={1} />
             </div>
           </div>
         </div>
@@ -100,10 +84,7 @@ function MosaicTile({
           alt={post.caption ?? `Afronated post ${index + 1}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
-          onError={(e) => {
-            const img = e.currentTarget;
-            img.style.display = "none";
-          }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
       )}
 
@@ -123,7 +104,6 @@ function MosaicTile({
         </motion.div>
       </div>
 
-      {/* Video / Reel badge */}
       {isVideo && !isEmpty && (
         <div className="absolute top-2 right-2 z-10 pointer-events-none">
           <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -132,7 +112,6 @@ function MosaicTile({
         </div>
       )}
 
-      {/* Red border highlight on hover */}
       <div className="absolute inset-0 border-0 group-hover:border group-hover:border-[#ef4444]/50 transition-all duration-300 pointer-events-none" />
     </motion.a>
   );
@@ -143,11 +122,26 @@ function MosaicTile({
 export function InstagramMosaic() {
   const T = useT();
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.15 });
-  const [posts, setPosts] = useState<InstaPost[]>(PLACEHOLDER_POSTS);
-  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const isInView     = useInView(containerRef, { once: true, amount: 0.15 });
+
+  // Initialise from cache immediately — no loading flash on revisit
+  const [posts, setPosts] = useState<InstaPost[]>(() => {
+    const cached = sessionCache.get<InstaPost[]>(CACHE_KEY);
+    return cached ?? PLACEHOLDER_POSTS;
+  });
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(() => {
+    return sessionCache.get<InstaPost[]>(CACHE_KEY) ? "loaded" : "loading";
+  });
+
+  const fetchStarted = useRef(false);
 
   useEffect(() => {
+    // Already have cached data — skip fetch
+    if (status === "loaded") return;
+    // Only fetch once
+    if (fetchStarted.current) return;
+    fetchStarted.current = true;
+
     if (!BEHOLD_WIDGET_ID) {
       setStatus("error");
       return;
@@ -174,7 +168,6 @@ export function InstagramMosaic() {
           const sizes = p.sizes as Record<string, string> | undefined;
 
           let mediaUrl = "";
-
           if (mediaType === "VIDEO") {
             mediaUrl =
               (p.thumbnailUrl as string) ||
@@ -192,13 +185,16 @@ export function InstagramMosaic() {
           }
 
           return {
-            id: String(p.id ?? Math.random()),
+            id:        String(p.id ?? Math.random()),
             mediaUrl,
             permalink: String(p.permalink ?? "https://www.instagram.com/afro.nated"),
-            caption: p.caption ? String(p.caption).slice(0, 120) : undefined,
+            caption:   p.caption ? String(p.caption).slice(0, 120) : undefined,
             mediaType,
           };
         });
+
+        // Persist to cache
+        sessionCache.set<InstaPost[]>(CACHE_KEY, parsed);
 
         setPosts(parsed);
         setStatus("loaded");
@@ -207,7 +203,7 @@ export function InstagramMosaic() {
         console.warn("[InstagramMosaic] Could not load Behold feed:", err);
         setStatus("error");
       });
-  }, []);
+  }, [status]);
 
   return (
     <motion.div
@@ -236,27 +232,6 @@ export function InstagramMosaic() {
         </a>
       </div>
 
-      {/*
-        ── Mosaic grid ────────────────────────────────────────────────────────
-        FIX 1 — Row height is now responsive.
-
-        Original: gridAutoRows: "clamp(80px, 14vw, 180px)"
-        At 375px wide (iPhone SE) 14vw = 52.5px — far too short. The 3-column
-        layout makes each small tile only ~125px wide × 52px tall, causing
-        severe squishing and the tall tile (rows 1-2) to be only ~107px.
-
-        Fix: use a slightly larger vw value (18vw) so small-phone tiles are
-        taller, and raise the lower clamp floor to 90px.
-
-          375px → 18vw = 67.5px → clamped to 90px  ✓
-          414px → 18vw = 74.5px → clamped to 90px  ✓
-          540px → 18vw = 97px                        ✓
-          768px → 18vw = 138px (iPad Mini)           ✓
-         1280px → 18vw = 230px → clamped to 180px   ✓ (cap unchanged)
-
-        FIX 2 — Gap is reduced on very small screens to prevent column bleed.
-        gap-1 on mobile (4px), gap-1.5 on sm+ (6px), gap-2 on md+ (8px).
-      ──────────────────────────────────────────────────────────────────────── */}
       <div
         className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2"
         style={{ gridAutoRows: "clamp(90px, 18vw, 180px)" }}
@@ -278,13 +253,6 @@ export function InstagramMosaic() {
         </p>
       )}
 
-      {/*
-        ── Follow CTA ─────────────────────────────────────────────────────────
-        FIX 3 — Add explicit top margin (mt-6) so the CTA never sits flush
-        against the last grid tile on phones. The original mt-4 (16px) was
-        occasionally absorbed by the grid gap, causing visual overlap on
-        narrow screens with shorter row heights.
-      ──────────────────────────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
