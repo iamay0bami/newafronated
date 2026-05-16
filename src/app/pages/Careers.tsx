@@ -8,6 +8,8 @@ interface Role {
   title: string;
   type: "Paid" | "Contributor";
   tag: string;
+  postedDate: string;   // ISO date string e.g. "2026-05-13"
+  isOpen: boolean;      // set to false to mark a role as filled/closed
   summary: string;
   whatYouDo: string[];
   whatWeLookFor: string[];
@@ -18,6 +20,8 @@ const ROLES: Role[] = [
     title: "Video Editor",
     type: "Paid",
     tag: "Production",
+    postedDate: "2026-05-13",
+    isOpen: true,
     summary:
       "We're looking for a video editor to help shape the visual language of Afro-Nated across interviews, short-form content, and digital storytelling. From full-length conversations to reels and social edits, you'll help turn raw footage into thoughtful, engaging content that feels intentional and culturally connected.",
     whatYouDo: [
@@ -39,6 +43,8 @@ const ROLES: Role[] = [
     title: "Content Strategist",
     type: "Contributor",
     tag: "Strategy",
+    postedDate: "2026-05-13",
+    isOpen: true,
     summary:
       "We're looking for a content strategist to help shape how Afro-Nated shows up across platforms and how our stories reach and resonate with people. This role is about thinking beyond individual posts — focusing on patterns, timing, audience behaviour, and how content builds over time.",
     whatYouDo: [
@@ -75,6 +81,20 @@ const VALUES = [
   },
 ];
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatPostedDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function RoleBadge({ type }: { type: Role["type"] }) {
@@ -95,12 +115,28 @@ function RoleBadge({ type }: { type: Role["type"] }) {
           : "bg-black/5 border-black/15 text-black/45"
       }`}
     >
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${
-          T.isDark ? "bg-white/40" : "bg-black/30"
-        }`}
-      />
+      <span className={`w-1.5 h-1.5 rounded-full ${T.isDark ? "bg-white/40" : "bg-black/30"}`} />
       Contributor
+    </span>
+  );
+}
+
+function StatusBadge({ isOpen }: { isOpen: boolean }) {
+  if (isOpen) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/15 border border-emerald-500/40 rounded-full text-emerald-400 text-[10px] font-bold tracking-widest uppercase">
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+        </span>
+        Open
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/15 rounded-full text-white/35 text-[10px] font-bold tracking-widest uppercase">
+      <span className="w-1.5 h-1.5 rounded-full bg-white/25" />
+      Filled
     </span>
   );
 }
@@ -115,19 +151,25 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.7, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
       className={`relative border transition-colors duration-300 group ${
-        T.isDark
-          ? "border-white/10 hover:border-[#ef4444]/40"
-          : "border-black/10 hover:border-[#ef4444]/40"
+        role.isOpen
+          ? T.isDark
+            ? "border-white/10 hover:border-[#ef4444]/40"
+            : "border-black/10 hover:border-[#ef4444]/40"
+          : T.isDark
+          ? "border-white/5 opacity-60"
+          : "border-black/5 opacity-60"
       }`}
     >
-      <div className="absolute top-0 left-0 w-[3px] h-0 bg-[#ef4444] group-hover:h-full transition-all duration-500 ease-in-out" />
+      {/* Left accent bar — only on open roles */}
+      {role.isOpen && (
+        <div className="absolute top-0 left-0 w-[3px] h-0 bg-[#ef4444] group-hover:h-full transition-all duration-500 ease-in-out" />
+      )}
 
       <div className="p-8 md:p-10">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        {/* Header row */}
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
-            <p
-              className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-2 ${T.textFaint}`}
-            >
+            <p className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-2 ${T.textFaint}`}>
               {role.tag}
             </p>
             <h3
@@ -137,8 +179,16 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
               {role.title}
             </h3>
           </div>
-          <RoleBadge type={role.type} />
+          <div className="flex flex-wrap items-center gap-2">
+            <RoleBadge type={role.type} />
+            <StatusBadge isOpen={role.isOpen} />
+          </div>
         </div>
+
+        {/* Posted date */}
+        <p className={`text-[10px] font-medium tracking-wider mb-6 ${T.textFaint}`}>
+          Posted {formatPostedDate(role.postedDate)}
+        </p>
 
         <p className={`text-base leading-relaxed mb-8 ${T.textMuted}`}>
           {role.summary}
@@ -146,41 +196,26 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h4
-              className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}
-            >
+            <h4 className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}>
               What You'll Do
             </h4>
             <ul className="space-y-3">
               {role.whatYouDo.map((item) => (
-                <li
-                  key={item}
-                  className={`flex items-start gap-3 text-sm leading-relaxed ${T.textMuted}`}
-                >
+                <li key={item} className={`flex items-start gap-3 text-sm leading-relaxed ${T.textMuted}`}>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] mt-1.5 flex-shrink-0" />
                   {item}
                 </li>
               ))}
             </ul>
           </div>
-
           <div>
-            <h4
-              className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}
-            >
+            <h4 className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}>
               What We Look For
             </h4>
             <ul className="space-y-3">
               {role.whatWeLookFor.map((item) => (
-                <li
-                  key={item}
-                  className={`flex items-start gap-3 text-sm leading-relaxed ${T.textMuted}`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      T.isDark ? "bg-white/30" : "bg-black/25"
-                    }`}
-                  />
+                <li key={item} className={`flex items-start gap-3 text-sm leading-relaxed ${T.textMuted}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${T.isDark ? "bg-white/30" : "bg-black/25"}`} />
                   {item}
                 </li>
               ))}
@@ -188,26 +223,38 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
           </div>
         </div>
 
-        <div
-          className={`mt-10 pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-            T.isDark ? "border-white/8" : "border-black/8"
-          }`}
-        >
-          <p className={`text-sm ${T.textFaint}`}>
-            Interested? Drop us a message with the subject line{" "}
-            <span className={`font-semibold ${T.textMuted}`}>
-              "{role.title} — Afro-Nated"
-            </span>
-          </p>
-          <a
-            href={`mailto:afronated@gmail.com?subject=${encodeURIComponent(
-              role.title + " — Afro-Nated"
-            )}`}
-            className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#ef4444] text-white text-sm font-bold tracking-wide uppercase hover:bg-white hover:text-black transition-all duration-300"
+        {/* Apply CTA — hidden on closed roles */}
+        {role.isOpen && (
+          <div
+            className={`mt-10 pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              T.isDark ? "border-white/8" : "border-black/8"
+            }`}
           >
-            Apply Now
-          </a>
-        </div>
+            <p className={`text-sm ${T.textFaint}`}>
+              Interested? Drop us a message with the subject line{" "}
+              <span className={`font-semibold ${T.textMuted}`}>
+                "{role.title} — Afro-Nated"
+              </span>
+            </p>
+            <a
+              href={`mailto:afronated@gmail.com?subject=${encodeURIComponent(
+                role.title + " — Afro-Nated"
+              )}`}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#ef4444] text-white text-sm font-bold tracking-wide uppercase hover:bg-white hover:text-black transition-all duration-300"
+            >
+              Apply Now
+            </a>
+          </div>
+        )}
+
+        {/* Closed notice */}
+        {!role.isOpen && (
+          <div className={`mt-10 pt-8 border-t ${T.isDark ? "border-white/8" : "border-black/8"}`}>
+            <p className={`text-sm ${T.textFaint}`}>
+              This role has been filled. Follow us on social media to hear about future openings.
+            </p>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -217,6 +264,7 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
 
 export function Careers() {
   const T = useT();
+  const openCount = ROLES.filter((r) => r.isOpen).length;
 
   useSEO({
     title: "Careers — Join the Afronated Collective",
@@ -231,6 +279,7 @@ export function Careers() {
     >
       <div className="max-w-7xl mx-auto">
 
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,16 +296,15 @@ export function Careers() {
           >
             BUILD WITH US
           </h1>
-          <p
-            className={`text-xl md:text-2xl leading-relaxed max-w-3xl ${T.textMuted}`}
-          >
+          <p className={`text-xl md:text-2xl leading-relaxed max-w-3xl ${T.textMuted}`}>
             Afro-Nated is a brand in motion. A creative collective shaped by the
             people who believe in what we're building. As we continue to grow,
             we're always excited to connect with thoughtful, passionate creatives
-            who want to grow with us. If that sounds like you, read on.
+            who want to grow with us.
           </p>
         </motion.div>
 
+        {/* Values */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -266,9 +314,7 @@ export function Careers() {
         >
           <div className="flex items-center gap-4 mb-10">
             <div className="w-6 h-px bg-[#ef4444]" />
-            <span
-              className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}
-            >
+            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
               What We're About
             </span>
           </div>
@@ -294,14 +340,13 @@ export function Careers() {
                 >
                   {v.label}
                 </h3>
-                <p className={`text-sm leading-relaxed ${T.textMuted}`}>
-                  {v.desc}
-                </p>
+                <p className={`text-sm leading-relaxed ${T.textMuted}`}>{v.desc}</p>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
+        {/* Roles */}
         <div className="mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -311,16 +356,12 @@ export function Careers() {
             className="flex items-center gap-4 mb-12"
           >
             <div className="w-6 h-px bg-[#ef4444]" />
-            <span
-              className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}
-            >
+            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
               Open Roles
             </span>
             <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent" />
-            <span
-              className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}
-            >
-              {ROLES.length} Available
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}>
+              {openCount} Available
             </span>
           </motion.div>
 
@@ -331,6 +372,7 @@ export function Careers() {
           </div>
         </div>
 
+        {/* Footer note */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -338,17 +380,11 @@ export function Careers() {
           transition={{ duration: 0.7 }}
           className="text-center"
         >
-          <div
-            className={`inline-block px-1 py-12 w-full max-w-2xl mx-auto`}
-          >
-            <span
-              className={`block text-[10px] font-bold tracking-[0.25em] uppercase mb-4 ${T.textFaint}`}
-            >
+          <div className="inline-block px-1 py-12 w-full max-w-2xl mx-auto">
+            <span className={`block text-[10px] font-bold tracking-[0.25em] uppercase mb-4 ${T.textFaint}`}>
               What's Next
             </span>
-            <p
-              className={`text-lg md:text-xl leading-relaxed mb-6 ${T.textMuted}`}
-            >
+            <p className={`text-lg md:text-xl leading-relaxed mb-6 ${T.textMuted}`}>
               The roles listed here reflect what we need right now. As Afro-Nated
               evolves, new opportunities will open up across production, writing,
               design, and community building. The best way to stay informed is to
@@ -365,6 +401,7 @@ export function Careers() {
             </p>
           </div>
         </motion.div>
+
       </div>
     </section>
   );

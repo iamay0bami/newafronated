@@ -4,23 +4,30 @@ import { Link } from "react-router";
 import { useT } from "../context/ThemeContext";
 import { MediumFeed } from "./MediumFeed";
 import { InstagramMosaic } from "./InstagramMosaic";
+import { NewsletterSignup } from "./NewsletterSignup";
 
 export function Mission() {
   const T = useT();
 
   return (
-    <section id="mission" className={`relative py-24 md:py-32 lg:py-40 overflow-hidden transition-colors duration-300 ${T.bg}`}>
+    <section
+      id="mission"
+      className={`relative py-24 md:py-32 lg:py-40 overflow-hidden transition-colors duration-300 ${T.bg}`}
+    >
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: T.isDark
-            ? `linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)`
-            : `linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px)`,
-          backgroundSize: "50px 50px"
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: T.isDark
+              ? `linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)`
+              : `linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px)`,
+            backgroundSize: "50px 50px",
+          }}
+        />
       </div>
 
-      {/* ── Punchline block ─────────────────────────────────────── */}
+      {/* Punchline block */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -37,7 +44,6 @@ export function Mission() {
             </span>
           </div>
 
-          {/* Punchline — bold, single punchy statement */}
           <h2
             className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-[0.95] mb-10 ${T.text}`}
             style={{ fontFamily: "Montserrat, sans-serif" }}
@@ -46,9 +52,9 @@ export function Mission() {
             <span className="text-[#ef4444]">told right.</span>
           </h2>
 
-          {/* One-liner sub-statement */}
           <p className={`text-lg md:text-xl max-w-2xl leading-relaxed mb-10 ${T.textMuted}`}>
-            We amplify African creatives — their sound, vision, and story — through interviews, short-form content, and editorial work that doesn't compromise.
+            We amplify African creatives — their sound, vision, and story — through
+            interviews, short-form content, and editorial work that doesn't compromise.
           </p>
 
           {/* CTA row */}
@@ -76,16 +82,23 @@ export function Mission() {
           </div>
         </motion.div>
 
-        {/* ── Medium article feed ──────────────────────────────────── */}
+        {/* Medium article feed */}
         <MediumFeed />
 
-        {/* ── Instagram mosaic ─────────────────────────────────────── */}
+        {/* Newsletter signup — sits between the blog feed and Instagram mosaic */}
+        <NewsletterSignup variant="inline" />
+
+        {/* Instagram mosaic */}
         <InstagramMosaic />
       </div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 0.05, scale: 1 }}
-        viewport={{ once: true }} transition={{ duration: 1.5 }}
-        className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-[#ef4444] blur-3xl" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 0.05, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.5 }}
+        className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-[#ef4444] blur-3xl"
+      />
     </section>
   );
 }

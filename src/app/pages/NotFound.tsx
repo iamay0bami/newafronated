@@ -17,7 +17,7 @@ export function NotFound() {
     <div
       className={`relative min-h-screen w-full flex items-center justify-center px-6 transition-colors duration-300 overflow-hidden ${T.bg} ${T.text}`}
     >
-      {/* Ambient glow — position absolute inside overflow-hidden so it can't bleed out */}
+      {/* Ambient glow — contained inside overflow-hidden */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full pointer-events-none"
         style={{
@@ -29,7 +29,7 @@ export function NotFound() {
 
       <div className="relative z-10 text-center w-full max-w-sm mx-auto">
 
-        {/* Ghost 404 — sized with vw so it always fits the viewport */}
+        {/* Ghost 404 */}
         <div className="select-none pointer-events-none" aria-hidden="true">
           <span
             className="block font-black tracking-tighter leading-none"
@@ -52,14 +52,18 @@ export function NotFound() {
           <div className="w-8 h-[3px] bg-[#ef4444] mx-auto mb-5" />
 
           <h1
-            className={`text-2xl sm:text-3xl font-black tracking-tighter mb-4 ${T.text}`}
+            className={`text-2xl sm:text-3xl font-black tracking-tighter mb-3 ${T.text}`}
             style={{ fontFamily: "Montserrat, sans-serif" }}
           >
             PAGE NOT FOUND
           </h1>
 
-          <p className={`text-sm sm:text-base leading-relaxed mb-10 max-w-xs mx-auto ${T.textMuted}`}>
-            The page you're looking for doesn't exist or may have been moved.
+          {/* On-brand copy — turns a dead end into a brand moment */}
+          <p className={`text-sm sm:text-base leading-relaxed mb-2 max-w-xs mx-auto ${T.textMuted}`}>
+            Lost? If you're a creative, you're in the right place anyway.
+          </p>
+          <p className={`text-xs leading-relaxed mb-10 max-w-xs mx-auto ${T.textFaint}`}>
+            The page you were looking for doesn't exist or may have moved.
           </p>
 
           <div className="flex flex-col items-center gap-3 w-full max-w-[260px] mx-auto">
