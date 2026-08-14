@@ -8,6 +8,7 @@ export function Layout() {
   return (
     <>
       <ScrollToTop />
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Navbar />
       {/*
         ErrorBoundary wraps only the page content (Outlet), not the Navbar
@@ -15,7 +16,9 @@ export function Layout() {
         the user can navigate away without needing a full browser refresh.
       */}
       <ErrorBoundary>
-        <Outlet />
+        <main id="main-content" tabIndex={-1}>
+          <Outlet />
+        </main>
       </ErrorBoundary>
       <Footer />
     </>

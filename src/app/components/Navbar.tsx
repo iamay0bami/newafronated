@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Youtube, Instagram, Menu, X } from "lucide-react";
 import { FaTiktok, FaMedium } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -38,6 +38,9 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const T = useT();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const firstMobileItemRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
+  const returnFocusRef = useRef(false);
 
   const isHome = location.pathname === "/";
 
@@ -59,6 +62,36 @@ export function Navbar() {
       });
     });
   }, [location.pathname]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      if (returnFocusRef.current) {
+        returnFocusRef.current = false;
+        menuButtonRef.current?.focus();
+      }
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => firstMobileItemRef.current?.focus());
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        returnFocusRef.current = true;
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   const goToSection = (id: string) => {
     setIsMobileMenuOpen(false);
@@ -103,7 +136,13 @@ export function Navbar() {
   ) => {
     if (item.href) {
       return (
-        <Link key={item.label} to={item.href} onClick={closeMobile} className={cls}>
+        <Link
+          key={item.label}
+          to={item.href}
+          onClick={closeMobile}
+          className={cls}
+          aria-current={location.pathname === item.href ? "page" : undefined}
+        >
           {item.label}{extra}
         </Link>
       );
@@ -133,7 +172,7 @@ export function Navbar() {
               closeMobile();
               if (isHome) window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="flex-shrink-0 transition-transform hover:scale-105 active:scale-95"
+            className="flex-shrink-0 min-w-11 min-h-11 flex items-center transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444]"
             aria-label="Go to home"
           >
             <AfronatedLogo className="h-7 md:h-8 lg:h-10 w-auto" style={{ maxWidth: 120 }} />
@@ -142,9 +181,9 @@ export function Navbar() {
           {/* Desktop nav links */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((item) => renderNavItem(item, linkCls))}
-            <Link to="/submit"  onClick={closeMobile} className={linkCls}>SUBMIT</Link>
-            <Link to="/partner" onClick={closeMobile} className={linkCls}>PARTNER</Link>
-            <Link to="/careers" onClick={closeMobile} className={`${linkCls} relative`}>
+            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={linkCls}>SUBMIT</Link>
+            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={linkCls}>PARTNER</Link>
+            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`${linkCls} relative`}>
               CAREERS
               <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
             </Link>
@@ -155,28 +194,34 @@ export function Navbar() {
             <div className="hidden md:flex lg:hidden items-center gap-2">
               {socialLinks.slice(0, 3).map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-                  className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
+                  className={`w-11 h-11 flex items-center justify-center transition-colors hover:text-[#ef4444] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${T.iconColor}`}>{icon}</a>
               ))}
             </div>
             <div className="hidden lg:flex items-center gap-2 xl:gap-3">
               {socialLinks.map(({ href, icon, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-                  className={`transition-colors hover:text-[#ef4444] ${T.iconColor}`}>{icon}</a>
+                  className={`w-11 h-11 flex items-center justify-center transition-colors hover:text-[#ef4444] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${T.iconColor}`}>{icon}</a>
               ))}
             </div>
 
             <button
               onClick={T.toggleTheme}
-              aria-label="Toggle theme"
-              className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all border ${T.border} ${T.iconColor} hover:text-[#ef4444]`}
+              aria-label={`Switch to ${T.isDark ? "light" : "dark"} theme`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${T.border} ${T.iconColor} hover:text-[#ef4444]`}
             >
               {T.isDark ? <SunIcon /> : <MoonIcon />}
             </button>
 
             <button
-              onClick={() => setIsMobileMenuOpen((o) => !o)}
-              aria-label="Toggle menu"
-              className={`lg:hidden transition-colors ${T.textMuted}`}
+              ref={menuButtonRef}
+              onClick={() => {
+                if (isMobileMenuOpen) returnFocusRef.current = true;
+                setIsMobileMenuOpen((open) => !open);
+              }}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
+              className={`lg:hidden w-11 h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${T.textMuted}`}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -184,14 +229,13 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile menu */}
+      <AnimatePresence>
+      {isMobileMenuOpen && (
       <motion.div
-        initial={false}
-        animate={{
-          opacity: isMobileMenuOpen ? 1 : 0,
-          y: isMobileMenuOpen ? 0 : -20,
-          pointerEvents: isMobileMenuOpen ? "auto" : "none",
-        }}
+        id="mobile-navigation"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
         className="fixed top-24 left-0 right-0 z-40 lg:hidden px-4"
       >
@@ -203,12 +247,12 @@ export function Navbar() {
           <div className="p-6 space-y-2">
             {navLinks.map((item) =>
               item.href
-                ? <Link key={item.label} to={item.href} onClick={closeMobile} className={`block ${mobileLinkCls}`}>{item.label}</Link>
-                : <button key={item.label} onClick={() => { item.action?.(); closeMobile(); }} className={`block ${mobileLinkCls}`}>{item.label}</button>
+                ? <Link ref={item === navLinks[0] ? firstMobileItemRef as React.Ref<HTMLAnchorElement> : undefined} key={item.label} to={item.href} aria-current={location.pathname === item.href ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>{item.label}</Link>
+                : <button ref={item === navLinks[0] ? firstMobileItemRef as React.Ref<HTMLButtonElement> : undefined} key={item.label} onClick={() => { item.action?.(); closeMobile(); }} className={`block ${mobileLinkCls}`}>{item.label}</button>
             )}
-            <Link to="/submit"  onClick={closeMobile} className={`block ${mobileLinkCls}`}>SUBMIT</Link>
-            <Link to="/partner" onClick={closeMobile} className={`block ${mobileLinkCls}`}>PARTNER</Link>
-            <Link to="/careers" onClick={closeMobile} className={`block ${mobileLinkCls} flex items-center gap-2`}>
+            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>SUBMIT</Link>
+            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>PARTNER</Link>
+            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls} flex items-center gap-2`}>
               CAREERS
               <span className="inline-flex items-center px-2 py-0.5 bg-[#ef4444]/20 border border-[#ef4444]/40 rounded-full text-[#ef4444] text-[9px] font-bold tracking-widest uppercase">
                 Hiring
@@ -240,6 +284,8 @@ export function Navbar() {
           </div>
         </div>
       </motion.div>
+      )}
+      </AnimatePresence>
 
       {isMobileMenuOpen && (
         <motion.div
@@ -247,7 +293,10 @@ export function Navbar() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
-          onClick={closeMobile}
+          onClick={() => {
+            returnFocusRef.current = true;
+            closeMobile();
+          }}
         />
       )}
     </>

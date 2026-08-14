@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Instagram, ArrowRight, X } from "lucide-react";
 import { Link } from "react-router";
 import { useT } from "../context/ThemeContext";
@@ -23,7 +23,6 @@ interface TeamMember {
   tagline: string;
   bio: string[];
   frontImage: string;
-  backImage: string;
   instagram?: string;
   twitter?: string;
 }
@@ -40,7 +39,6 @@ const TEAM_MEMBERS: TeamMember[] = [
       "Beyond Afro-Nated, Onahi is driven by the long-term vision of building something that outlasts any single moment — an archive of African creativity that documents this generation's output with the seriousness it deserves.",
     ],
     frontImage: "/onahi-official.png",
-    backImage:  "/onahi-party1.png",
     instagram:  "https://www.instagram.com/onahiijeh",
   },
   {
@@ -54,7 +52,6 @@ const TEAM_MEMBERS: TeamMember[] = [
       "Grace's belief is simple: great creative work doesn't happen by accident. It happens because the right structures are in place to support the people doing it. She builds those structures.",
     ],
     frontImage: "/grace-front.png",
-    backImage:  "/grace-back.png",
     instagram:  "https://www.instagram.com/graceotolorin",
   },
   {
@@ -68,15 +65,63 @@ const TEAM_MEMBERS: TeamMember[] = [
       "She plays an important role in the collective's ability to maintain a consistent and credible presence across its growing range of channels and formats.",
     ],
     frontImage: "/veronica-back.png",
-    backImage:  "/veronica-front.png",
     instagram:  "https://www.instagram.com/verah_skill_guild/",
   },
 ];
 
 // ─── Bio Modal ────────────────────────────────────────────────────────────────
 
-function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void }) {
+function TeamImage({ member, className, style }: { member: TeamMember; className: string; style?: React.CSSProperties }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="w-full h-full bg-[#111] flex items-center justify-center">
+      {failed ? (
+        <span className="text-white text-xs font-black tracking-widest">AFRO-NATED</span>
+      ) : (
+        <img src={member.frontImage} alt={member.name} className={className} style={style} onError={() => setFailed(true)} />
+      )}
+    </div>
+  );
+}
+
+function BioModal({ member, onClose, returnFocus }: { member: TeamMember; onClose: () => void; returnFocus: HTMLElement | null }) {
   const T = useT();
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      ));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      returnFocus?.focus();
+    };
+  }, [onClose, returnFocus]);
 
   return (
     <AnimatePresence>
@@ -104,9 +149,14 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           `}
           style={{ maxHeight: "92vh" }}
           onClick={(e) => e.stopPropagation()}
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
         >
           {/* Close button */}
           <button
+            ref={closeRef}
             onClick={onClose}
             aria-label="Close bio"
             className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-black/50 hover:bg-black/70 text-white"
@@ -117,21 +167,10 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
           {/* Hero image */}
           <div className="relative w-full flex-shrink-0" style={{ height: "min(80vw, 420px)" }}>
             <div className="absolute inset-0 md:hidden">
-              <img
-                src={member.frontImage}
-                alt={member.name}
-                className="w-full h-full object-cover object-top"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/onahi-official.png"; }}
-              />
+              <TeamImage member={member} className="w-full h-full object-cover object-top" />
             </div>
             <div className="absolute inset-0 hidden md:block">
-              <img
-                src={member.frontImage}
-                alt={member.name}
-                className="w-full h-full object-cover object-top"
-                style={{ objectPosition: "center 15%" }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/onahi-official.png"; }}
-              />
+              <TeamImage member={member} className="w-full h-full object-cover object-top" style={{ objectPosition: "center 15%" }} />
             </div>
 
             <div
@@ -148,12 +187,13 @@ function BioModal({ member, onClose }: { member: TeamMember; onClose: () => void
                 {member.role}
               </p>
               <h2
-                className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight"
+                id={titleId}
+                className={`text-2xl md:text-3xl font-black tracking-tight leading-tight ${T.text}`}
                 style={{ fontFamily: "Montserrat, sans-serif" }}
               >
                 {member.name}
               </h2>
-              <p className="text-white/55 text-xs mt-0.5 italic">{member.tagline}</p>
+              <p className={`text-xs mt-0.5 italic ${T.textMuted}`}>{member.tagline}</p>
             </div>
           </div>
 
@@ -220,7 +260,7 @@ function MemberCard({
 }: {
   member: TeamMember;
   index: number;
-  onSelect: (m: TeamMember) => void;
+  onSelect: (m: TeamMember, trigger: HTMLButtonElement) => void;
 }) {
   const T = useT();
   const [hovered, setHovered] = useState(false);
@@ -236,23 +276,15 @@ function MemberCard({
       <button
         type="button"
         className="w-full text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-xl"
-        onClick={() => onSelect(member)}
+        onClick={(event) => onSelect(member, event.currentTarget)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         aria-label={`Read full bio for ${member.name}`}
       >
         <div className="relative overflow-hidden rounded-xl mb-5" style={{ aspectRatio: "3/4" }}>
-          <motion.img
-            src={member.frontImage}
-            alt={member.name}
-            draggable={false}
-            className="w-full h-full object-cover object-top"
-            animate={{ scale: hovered ? 1.05 : 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = "/onahi-official.png";
-            }}
-          />
+          <motion.div animate={{ scale: hovered ? 1.05 : 1 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="w-full h-full">
+            <TeamImage member={member} className="w-full h-full object-cover object-top" />
+          </motion.div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
@@ -312,6 +344,8 @@ function MemberCard({
 export function TeamPage() {
   const T = useT();
   const [selected, setSelected] = useState<TeamMember | null>(null);
+  const selectedTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const closeBio = useCallback(() => setSelected(null), []);
 
   useSEO({
     title: "The Team — Afronated | African Creative Media Collective",
@@ -401,7 +435,10 @@ export function TeamPage() {
                 key={member.name}
                 member={member}
                 index={index}
-                onSelect={setSelected}
+                onSelect={(member, trigger) => {
+                  selectedTriggerRef.current = trigger;
+                  setSelected(member);
+                }}
               />
             ))}
           </div>
@@ -438,7 +475,7 @@ export function TeamPage() {
 
       {/* Bio modal */}
       {selected && (
-        <BioModal member={selected} onClose={() => setSelected(null)} />
+        <BioModal member={selected} onClose={closeBio} returnFocus={selectedTriggerRef.current} />
       )}
     </div>
   );

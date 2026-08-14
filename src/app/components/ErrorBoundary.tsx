@@ -23,6 +23,8 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
+  private headingRef = { current: null as HTMLHeadingElement | null };
+
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, errorMessage: "" };
@@ -36,8 +38,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // In production you could send this to a logging service like Sentry
     console.error("[ErrorBoundary] Caught error:", error, info.componentStack);
+  }
+
+  componentDidUpdate(_previousProps: Props, previousState: State) {
+    if (!previousState.hasError && this.state.hasError) {
+      this.headingRef.current?.focus();
+    }
   }
 
   handleReset = () => {
@@ -58,8 +65,8 @@ export class ErrorBoundary extends Component<Props, State> {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#000",
-          color: "#fff",
+          background: "var(--background)",
+          color: "var(--foreground)",
           padding: "2rem",
           fontFamily: "Montserrat, Inter, sans-serif",
           textAlign: "center",
@@ -91,10 +98,12 @@ export class ErrorBoundary extends Component<Props, State> {
           />
 
           <h1
+            ref={this.headingRef}
+            tabIndex={-1}
             style={{
               fontSize: "clamp(1.5rem, 5vw, 2rem)",
               fontWeight: 900,
-              letterSpacing: "-0.04em",
+              letterSpacing: "0",
               marginBottom: "1rem",
             }}
           >
@@ -103,18 +112,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
           <p
             style={{
-              color: "rgba(255,255,255,0.55)",
+              color: "var(--muted-foreground)",
               fontSize: "0.95rem",
               lineHeight: 1.7,
               marginBottom: "2rem",
             }}
           >
-            An unexpected error occurred. This has been noted.
-            Head back to the homepage and everything should be fine.
+            An unexpected error occurred. Head back to the homepage to continue.
           </p>
 
           <button
             onClick={this.handleReset}
+            className="error-boundary-button"
             style={{
               display: "inline-flex",
               alignItems: "center",

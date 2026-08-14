@@ -42,6 +42,9 @@ export function ScrollToTop() {
     // Scroll to the top of the page.
     // `{ behavior: "instant" }` avoids a visible smooth-scroll on navigation.
     window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    requestAnimationFrame(() => {
+      document.getElementById("main-content")?.focus({ preventScroll: true });
+    });
   }, [pathname]);
 
   return null;
