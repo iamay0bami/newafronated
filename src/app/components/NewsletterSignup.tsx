@@ -15,9 +15,9 @@
  *
  * 3. In MailerLite: Integrations → API → Generate a new API token
  *
- * 4. Add to Vercel Environment Variables:
- *      VITE_MAILERLITE_API_KEY   → your API token
- *      VITE_MAILERLITE_GROUP_ID  → your group ID (numeric string)
+ * 4. Add to Vercel Environment Variables (do not expose these to Vite):
+ *      MAILERLITE_API_KEY   → your API token
+ *      MAILERLITE_GROUP_ID  → your group ID (numeric string)
  *
  * 5. In MailerLite: Campaigns → Create campaign → RSS campaign
  *    RSS feed URL: https://medium.com/feed/@afro-nated
@@ -35,37 +35,15 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Mail } from "lucide-react";
 import { useT } from "../context/ThemeContext";
 
-const MAILERLITE_API_KEY  = import.meta.env.VITE_MAILERLITE_API_KEY  as string | undefined;
-const MAILERLITE_GROUP_ID = import.meta.env.VITE_MAILERLITE_GROUP_ID as string | undefined;
-
 async function subscribeEmail(email: string): Promise<void> {
-  if (!MAILERLITE_API_KEY || !MAILERLITE_GROUP_ID) {
-    throw new Error("MailerLite environment variables are not configured.");
-  }
-
-  // MailerLite v2 API — add subscriber and assign to group in one call
-  const res = await fetch(
-    `https://connect.mailerlite.com/api/subscribers`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${MAILERLITE_API_KEY}`,
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        groups: [MAILERLITE_GROUP_ID],
-        status: "active",
-      }),
-    }
-  );
+  const res = await fetch("/api/newsletter", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    // 409 = already subscribed — treat as success so the user isn't confused
-    if (res.status === 409) return;
-    throw new Error(body?.message ?? `Subscribe failed: ${res.status}`);
+    throw new Error(`Subscribe failed: ${res.status}`);
   }
 }
 
@@ -119,9 +97,10 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              role="status"
               className="text-[#ef4444] text-xs font-bold tracking-wide"
             >
-              ✓ You're in. Watch your inbox.
+              You're in. Watch your inbox.
             </motion.p>
           ) : (
             <motion.form
@@ -164,7 +143,7 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
         </AnimatePresence>
 
         {status === "error" && (
-          <p className={`mt-2 text-[10px] leading-snug ${T.textFaint}`}>{errorMsg}</p>
+          <p role="alert" className={`mt-2 text-[10px] leading-snug ${T.textFaint}`}>{errorMsg}</p>
         )}
       </div>
     );
@@ -226,6 +205,7 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              role="status"
               className="flex items-center gap-3"
             >
               <div className="w-8 h-8 rounded-full bg-[#ef4444]/20 border border-[#ef4444]/40 flex items-center justify-center flex-shrink-0">
@@ -293,6 +273,7 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            role="alert"
             className={`mt-3 text-xs leading-relaxed ${T.textFaint}`}
           >
             {errorMsg}

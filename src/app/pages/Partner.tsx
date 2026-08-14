@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "../context/ThemeContext";
 import { useSEO } from "../hooks/useSEO";
 import { CustomSelect, type SelectOption } from "../components/ui/CustomSelect";
@@ -14,7 +14,6 @@ async function sendViaEmailJS(params: Record<string, string>) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "origin": "http://localhost",
     },
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID,
@@ -41,6 +40,20 @@ const PARTNERSHIP_OPTIONS: SelectOption[] = [
   { value: "other",               label: "Other"               },
 ];
 
+type FieldName = "name" | "email" | "type" | "message";
+type FieldErrors = Partial<Record<FieldName, string>>;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateForm(formData: { name: string; email: string; type: string; message: string }) {
+  const errors: FieldErrors = {};
+  if (!formData.name.trim()) errors.name = "Enter your name.";
+  if (!formData.email.trim()) errors.email = "Enter your email address.";
+  else if (!EMAIL_PATTERN.test(formData.email.trim())) errors.email = "Enter a valid email address.";
+  if (!formData.type) errors.type = "Select a partnership type.";
+  if (!formData.message.trim()) errors.message = "Enter a message about your inquiry.";
+  return errors;
+}
+
 export function Partner() {
   const T = useT();
   const [formData, setFormData] = useState({
@@ -51,6 +64,12 @@ export function Partner() {
     message: "",
   });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const successRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (status === "success") successRef.current?.focus();
+  }, [status]);
 
   useSEO({
     title: "Partner with Afronated — Work With Us",
@@ -61,10 +80,21 @@ export function Partner() {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+  ) => {
+    const field = e.target.name;
+    setFormData((p) => ({ ...p, [field]: e.target.value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const nextErrors = validateForm(formData);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      const firstField = Object.keys(nextErrors)[0] as FieldName;
+      document.getElementById(`partner-${firstField}`)?.focus();
+      return;
+    }
     setStatus("sending");
     try {
       await sendViaEmailJS({
@@ -78,6 +108,7 @@ export function Partner() {
         subject: `Partnership inquiry from ${formData.name}${formData.organization ? ` (${formData.organization})` : ""}`,
       });
       setFormData({ name: "", email: "", organization: "", type: "", message: "" });
+      setErrors({});
       setStatus("success");
     } catch (err) {
       console.error("[Partner] EmailJS error:", err);
@@ -85,7 +116,7 @@ export function Partner() {
     }
   };
 
-  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${
+  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2 transition-colors ${
     T.isDark
       ? "border-white/20 text-white placeholder:text-white/30"
       : "border-black/20 text-black placeholder:text-black/30"
@@ -208,6 +239,7 @@ export function Partner() {
                 animate={{ opacity: 1, y: 0 }}
                 className="py-12 text-center space-y-4"
               >
+                <h3 ref={successRef} tabIndex={-1} className="sr-only">Inquiry sent</h3>
                 <div className="w-16 h-16 rounded-full bg-[#ef4444]/20 border border-[#ef4444]/40 flex items-center justify-center mx-auto">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2} className="w-8 h-8">
                     <polyline points="20 6 9 17 4 12" />
@@ -225,6 +257,9 @@ export function Partner() {
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                <p className="sr-only" aria-live="polite">
+                  {status === "sending" ? "Sending inquiry." : ""}
+                </p>
 
                 <div>
                   <label htmlFor="partner-name" className={labelCls}>
@@ -239,9 +274,12 @@ export function Partner() {
                     inputMode="text"
                     value={formData.name}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? "partner-name-error" : undefined}
                     placeholder="Your name"
                     className={inputCls}
                   />
+                  {errors.name && <p id="partner-name-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.name}</p>}
                 </div>
 
                 <div>
@@ -257,9 +295,12 @@ export function Partner() {
                     inputMode="email"
                     value={formData.email}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? "partner-email-error" : undefined}
                     placeholder="you@company.com"
                     className={inputCls}
                   />
+                  {errors.email && <p id="partner-email-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -288,7 +329,12 @@ export function Partner() {
                   placeholder="Select..."
                   options={PARTNERSHIP_OPTIONS}
                   value={formData.type}
-                  onChange={(val) => setFormData((p) => ({ ...p, type: val }))}
+                  onChange={(val) => {
+                    setFormData((p) => ({ ...p, type: val }));
+                    setErrors((current) => ({ ...current, type: undefined }));
+                  }}
+                  error={errors.type}
+                  errorId="partner-type-error"
                 />
 
                 <div>
@@ -302,14 +348,17 @@ export function Partner() {
                     autoComplete="off"
                     value={formData.message}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={errors.message ? "partner-message-error" : undefined}
                     placeholder="Tell us about your brand or creative project and how you'd like to work together..."
                     rows={6}
                     className={inputCls + " resize-none"}
                   />
+                  {errors.message && <p id="partner-message-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.message}</p>}
                 </div>
 
                 {status === "error" && (
-                  <p className="text-[#ef4444] text-sm">
+                  <p role="alert" className="text-[#ef4444] text-sm">
                     Something went wrong. Please try again or email us directly at{" "}
                     <a href="mailto:afronated@gmail.com" className="underline">
                       afronated@gmail.com

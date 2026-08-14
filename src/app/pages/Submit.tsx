@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "../context/ThemeContext";
 import { useSEO } from "../hooks/useSEO";
 import { CustomSelect, type SelectOption } from "../components/ui/CustomSelect";
@@ -14,7 +14,6 @@ async function sendViaEmailJS(params: Record<string, string>) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "origin": "http://localhost",
     },
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID,
@@ -49,6 +48,20 @@ const INTENTION_OPTIONS: SelectOption[] = [
     shortLabel: "Paid Project",
   },
 ];
+
+type FieldName = "name" | "email" | "intention" | "message";
+type FieldErrors = Partial<Record<FieldName, string>>;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateForm(formData: { name: string; email: string; intention: string; message: string }) {
+  const errors: FieldErrors = {};
+  if (!formData.name.trim()) errors.name = "Enter your name.";
+  if (!formData.email.trim()) errors.email = "Enter your email address.";
+  else if (!EMAIL_PATTERN.test(formData.email.trim())) errors.email = "Enter a valid email address.";
+  if (!formData.intention) errors.intention = "Select what you want to do.";
+  if (!formData.message.trim()) errors.message = "Tell us more about your inquiry.";
+  return errors;
+}
 
 // ─── Intent clarification cards ───────────────────────────────────────────────
 
@@ -150,6 +163,12 @@ export function Submit() {
     message: "",
   });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const successRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (status === "success") successRef.current?.focus();
+  }, [status]);
 
   useSEO({
     title: "Put Me On — Submit Your Creative Work to Afronated",
@@ -160,10 +179,21 @@ export function Submit() {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+  ) => {
+    const field = e.target.name;
+    setFormData((p) => ({ ...p, [field]: e.target.value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const nextErrors = validateForm(formData);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      const firstField = Object.keys(nextErrors)[0] as FieldName;
+      document.getElementById(`submit-${firstField}`)?.focus();
+      return;
+    }
     setStatus("sending");
     try {
       await sendViaEmailJS({
@@ -177,6 +207,7 @@ export function Submit() {
         subject: `Submit inquiry from ${formData.name}`,
       });
       setFormData({ name: "", email: "", intention: "", socialHandle: "", message: "" });
+      setErrors({});
       setStatus("success");
     } catch (err) {
       console.error("[Submit] EmailJS error:", err);
@@ -184,7 +215,7 @@ export function Submit() {
     }
   };
 
-  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none transition-colors ${
+  const inputCls = `w-full px-0 py-3 bg-transparent border-b focus:border-[#ef4444] outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2 transition-colors ${
     T.isDark
       ? "border-white/20 text-white placeholder:text-white/30"
       : "border-black/20 text-black placeholder:text-black/30"
@@ -265,6 +296,7 @@ export function Submit() {
                 animate={{ opacity: 1, y: 0 }}
                 className="py-12 text-center space-y-4"
               >
+                <h2 ref={successRef} tabIndex={-1} className="sr-only">Submission sent</h2>
                 <div className="w-16 h-16 rounded-full bg-[#ef4444]/20 border border-[#ef4444]/40 flex items-center justify-center mx-auto">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2} className="w-8 h-8">
                     <polyline points="20 6 9 17 4 12" />
@@ -282,6 +314,9 @@ export function Submit() {
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                <p className="sr-only" aria-live="polite">
+                  {status === "sending" ? "Sending submission." : ""}
+                </p>
 
                 <div>
                   <label htmlFor="submit-name" className={labelCls}>Name <span className="text-[#ef4444]">*</span></label>
@@ -294,9 +329,12 @@ export function Submit() {
                     inputMode="text"
                     value={formData.name}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? "submit-name-error" : undefined}
                     placeholder="Your name"
                     className={inputCls}
                   />
+                  {errors.name && <p id="submit-name-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.name}</p>}
                 </div>
 
                 <div>
@@ -310,9 +348,12 @@ export function Submit() {
                     inputMode="email"
                     value={formData.email}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? "submit-email-error" : undefined}
                     placeholder="your@email.com"
                     className={inputCls}
                   />
+                  {errors.email && <p id="submit-email-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -339,7 +380,12 @@ export function Submit() {
                   placeholder="Select..."
                   options={INTENTION_OPTIONS}
                   value={formData.intention}
-                  onChange={(val) => setFormData((p) => ({ ...p, intention: val }))}
+                  onChange={(val) => {
+                    setFormData((p) => ({ ...p, intention: val }));
+                    setErrors((current) => ({ ...current, intention: undefined }));
+                  }}
+                  error={errors.intention}
+                  errorId="submit-intention-error"
                 />
 
                 <div>
@@ -353,14 +399,17 @@ export function Submit() {
                     autoComplete="off"
                     value={formData.message}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={errors.message ? "submit-message-error" : undefined}
                     placeholder="Tell us about your creative work, share links, describe what you'd like to collaborate on..."
                     rows={5}
                     className={inputCls + " resize-none"}
                   />
+                  {errors.message && <p id="submit-message-error" role="alert" className="mt-2 text-xs text-[#ef4444]">{errors.message}</p>}
                 </div>
 
                 {status === "error" && (
-                  <p className="text-[#ef4444] text-sm">
+                  <p role="alert" className="text-[#ef4444] text-sm">
                     Something went wrong. Please try again or email us directly at{" "}
                     <a href="mailto:afronated@gmail.com" className="underline">
                       afronated@gmail.com

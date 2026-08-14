@@ -19,6 +19,8 @@ interface CustomSelectProps {
   placeholder?: string;
   required?: boolean;
   label: string;
+  error?: string;
+  errorId?: string;
 }
 
 export function CustomSelect({
@@ -30,6 +32,8 @@ export function CustomSelect({
   placeholder = "Select...",
   required,
   label,
+  error,
+  errorId,
 }: CustomSelectProps) {
   const T = useT();
   const uid = useId();
@@ -83,7 +87,7 @@ export function CustomSelect({
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Hidden native input so the value is part of the form */}
-      <input type="hidden" name={name} value={value} required={required} />
+      <input type="hidden" name={name} value={value} />
 
       <label htmlFor={inputId} className={labelCls}>
         {label}{required && <span className="text-[#ef4444] ml-0.5">*</span>}
@@ -96,6 +100,9 @@ export function CustomSelect({
         role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={`${inputId}-listbox`}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         onKeyDown={handleKeyDown}
         onClick={() => setOpen((o) => !o)}
         className={`
@@ -103,6 +110,7 @@ export function CustomSelect({
           px-0 py-3 border-b-2 bg-transparent
           text-left text-sm font-medium
           focus:outline-none transition-colors duration-200
+          focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2
           ${open
             ? "border-[#ef4444]"
             : T.isDark
@@ -135,6 +143,7 @@ export function CustomSelect({
       <AnimatePresence>
         {open && (
           <motion.ul
+            id={`${inputId}-listbox`}
             role="listbox"
             aria-label={label}
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -193,6 +202,11 @@ export function CustomSelect({
           </motion.ul>
         )}
       </AnimatePresence>
+      {error && errorId && (
+        <p id={errorId} className="mt-2 text-xs text-[#ef4444]" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
