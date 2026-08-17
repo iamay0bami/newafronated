@@ -87,7 +87,7 @@ function VideoCard({ video, index }: { video: VideoItem; index: number }) {
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       className={`group relative aspect-video rounded-lg overflow-hidden cursor-pointer ${
-        T.isDark ? "bg-[#1a1a1a]" : "bg-[#e8e8e8]"
+        T.isDark ? "bg-[#1a1a1a]" : "bg-black/[0.08]"
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -165,7 +165,7 @@ function SkeletonCard({ T }: { T: ReturnType<typeof useT> }) {
   return (
     <div
       className={`relative aspect-video rounded-lg overflow-hidden animate-pulse ${
-        T.isDark ? "bg-[#1a1a1a]" : "bg-[#e8e8e8]"
+        T.isDark ? "bg-[#1a1a1a]" : "bg-black/[0.08]"
       }`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[#ef4444]/5" />

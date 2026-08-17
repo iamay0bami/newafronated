@@ -14,12 +14,11 @@ export function Privacy() {
   });
 
   return (
-    <section className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg}`}>
+    <section className={`page-shell transition-colors duration-300 ${T.bg}`}>
       <div className="max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h1
-            className={`text-5xl md:text-7xl font-black tracking-tighter mb-8 ${T.text}`}
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className={`type-page-title mb-8 ${T.text}`}
           >
             PRIVACY POLICY
           </h1>

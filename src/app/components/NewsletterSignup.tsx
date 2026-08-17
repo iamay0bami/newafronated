@@ -161,7 +161,7 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
         border p-8 md:p-12
         ${T.isDark
           ? "bg-[#0a0a0a] border-white/8"
-          : "bg-[#f5f5f5] border-black/8"
+          : "bg-white border-black/10"
         }
       `}
     >

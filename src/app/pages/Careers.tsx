@@ -101,7 +101,7 @@ function RoleBadge({ type }: { type: Role["type"] }) {
   const T = useT();
   if (type === "Paid") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#ef4444]/20 border border-[#ef4444]/50 rounded-full text-[#ef4444] text-[10px] font-bold tracking-widest uppercase">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#ef4444]/20 border border-[#ef4444]/50 rounded-full text-[#ef4444] text-xs font-bold tracking-widest uppercase">
         <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
         Paid Role
       </span>
@@ -109,7 +109,7 @@ function RoleBadge({ type }: { type: Role["type"] }) {
   }
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase border ${
         T.isDark
           ? "bg-white/5 border-white/15 text-white/50"
           : "bg-black/5 border-black/15 text-black/45"
@@ -122,20 +122,18 @@ function RoleBadge({ type }: { type: Role["type"] }) {
 }
 
 function StatusBadge({ isOpen }: { isOpen: boolean }) {
+  const T = useT();
   if (isOpen) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/15 border border-emerald-500/40 rounded-full text-emerald-400 text-[10px] font-bold tracking-widest uppercase">
-        <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-        </span>
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#ef4444]/15 border border-[#ef4444]/50 rounded-full text-[#ef4444] text-xs font-bold tracking-widest uppercase">
+        <span className="inline-flex rounded-full h-1.5 w-1.5 bg-[#ef4444]" />
         Open
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/15 rounded-full text-white/35 text-[10px] font-bold tracking-widest uppercase">
-      <span className="w-1.5 h-1.5 rounded-full bg-white/25" />
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold tracking-widest uppercase ${T.isDark ? "bg-white/5 border-white/20 text-white/65" : "bg-black/5 border-black/20 text-black/65"}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${T.isDark ? "bg-white/60" : "bg-black/60"}`} />
       Filled
     </span>
   );
@@ -169,7 +167,7 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
         {/* Header row */}
         <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
-            <p className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-2 ${T.textFaint}`}>
+            <p className={`type-kicker mb-2 ${T.textFaint}`}>
               {role.tag}
             </p>
             <h3
@@ -186,7 +184,7 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
         </div>
 
         {/* Posted date */}
-        <p className={`text-[10px] font-medium tracking-wider mb-6 ${T.textFaint}`}>
+        <p className={`type-meta font-medium tracking-wider mb-6 ${T.textFaint}`}>
           Posted {formatPostedDate(role.postedDate)}
         </p>
 
@@ -196,7 +194,7 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h4 className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}>
+            <h4 className={`type-kicker mb-4 ${T.textFaint}`}>
               What You'll Do
             </h4>
             <ul className="space-y-3">
@@ -209,7 +207,7 @@ function RoleCard({ role, index }: { role: Role; index: number }) {
             </ul>
           </div>
           <div>
-            <h4 className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-4 ${T.textFaint}`}>
+            <h4 className={`type-kicker mb-4 ${T.textFaint}`}>
               What We Look For
             </h4>
             <ul className="space-y-3">
@@ -275,7 +273,7 @@ export function Careers() {
 
   return (
     <section
-      className={`min-h-screen pt-32 pb-24 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}
+      className={`page-shell transition-colors duration-300 ${T.bg} ${T.text}`}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -291,8 +289,7 @@ export function Careers() {
             Join The Collective
           </span>
           <h1
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-8 leading-none"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className="type-page-title mb-8"
           >
             BUILD WITH US
           </h1>
@@ -314,7 +311,7 @@ export function Careers() {
         >
           <div className="flex items-center gap-4 mb-10">
             <div className="w-6 h-px bg-[#ef4444]" />
-            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
+            <span className={`type-kicker ${T.textFaint}`}>
               What We're About
             </span>
           </div>
@@ -356,11 +353,11 @@ export function Careers() {
             className="flex items-center gap-4 mb-12"
           >
             <div className="w-6 h-px bg-[#ef4444]" />
-            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
+            <span className={`type-kicker ${T.textFaint}`}>
               Open Roles
             </span>
             <div className="flex-1 h-px bg-gradient-to-r from-[#ef4444]/20 to-transparent" />
-            <span className={`text-[10px] font-bold tracking-widest uppercase ${T.textFaint}`}>
+            <span className={`type-kicker ${T.textFaint}`}>
               {openCount} Available
             </span>
           </motion.div>
@@ -381,7 +378,7 @@ export function Careers() {
           className="text-center"
         >
           <div className="inline-block px-1 py-12 w-full max-w-2xl mx-auto">
-            <span className={`block text-[10px] font-bold tracking-[0.25em] uppercase mb-4 ${T.textFaint}`}>
+            <span className={`type-kicker block mb-4 ${T.textFaint}`}>
               What's Next
             </span>
             <p className={`text-lg md:text-xl leading-relaxed mb-6 ${T.textMuted}`}>

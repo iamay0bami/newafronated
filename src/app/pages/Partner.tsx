@@ -128,7 +128,7 @@ export function Partner() {
 
   return (
     <section
-      className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}
+      className={`page-shell transition-colors duration-300 ${T.bg} ${T.text}`}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -144,8 +144,7 @@ export function Partner() {
             WORK WITH US
           </span>
           <h1
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className="type-page-title mb-6"
           >
             PARTNER
           </h1>
@@ -165,7 +164,7 @@ export function Partner() {
             <p className={`text-xl leading-relaxed ${T.textMuted}`}>
               This includes interviews, content production, event coverage, creative direction, and media partnerships tailored to your goals.
             </p>
-            <p className={`text-sm font-semibold tracking-wide uppercase ${T.isDark ? "text-white/35" : "text-black/35"}`}>
+            <p className={`text-sm font-semibold tracking-wide uppercase ${T.textFaint}`}>
               All projects under this section are paid engagements based on scope.
             </p>
           </div>
@@ -224,8 +223,7 @@ export function Partner() {
         >
           <div className="max-w-3xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-black tracking-tight mb-4"
-              style={{ fontFamily: "Montserrat, sans-serif" }}
+              className="type-section-title mb-4"
             >
               SEND AN INQUIRY
             </h2>
@@ -371,7 +369,7 @@ export function Partner() {
                   disabled={status === "sending"}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-12 py-4 bg-[#ef4444] text-white hover:bg-white hover:text-black transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="system-button w-full sm:w-auto px-12 bg-[#ef4444] text-black hover:bg-white transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   {status === "sending" ? "Sending..." : "Send Inquiry"}
                 </motion.button>

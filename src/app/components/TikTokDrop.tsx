@@ -121,7 +121,7 @@ function VideoCard({
               <div className="w-full h-full bg-gradient-to-br from-transparent via-[#ef4444]/5 to-[#ef4444]/10" />
             </div>
           ) : hasFailed ? (
-            <div className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-xl ${T.isDark ? "bg-[#1a1a1a]" : "bg-[#e8e8e8]"}`}>
+            <div className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-xl ${T.isDark ? "bg-[#1a1a1a]" : "bg-black/[0.08]"}`}>
               <div className="w-6 h-0.5 bg-[#ef4444]" />
               <TikTokIcon size={24} />
               <span className="text-[9px] font-bold tracking-widest uppercase opacity-40">
@@ -275,7 +275,7 @@ export function TikTokDrop() {
     const scrollAmount = scrollRef.current.clientWidth * 0.65;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   };
 
@@ -307,7 +307,7 @@ export function TikTokDrop() {
       className={`relative py-16 sm:py-20 md:py-24 lg:py-32 px-4 md:px-8 overflow-hidden transition-colors duration-300 ${
         T.isDark
           ? "bg-gradient-to-b from-black via-[#0a0a0a] to-black"
-          : "bg-gradient-to-b from-white via-[#f8f8f8] to-white"
+          : "bg-gradient-to-b from-white via-black/[0.02] to-white"
       }`}
     >
       {/* Ambient glow */}

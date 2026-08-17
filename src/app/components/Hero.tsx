@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,10 +28,11 @@ export function Hero() {
   const [videoReady, setVideoReady]     = useState(false);
   const [thumbSrc, setThumbSrc]         = useState(THUMB_MAXRES);
   const isMobile = useIsMobile();
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || prefersReducedMotion) return;
     const tryPlay = () => { video.play().catch(() => {}); };
     tryPlay();
     const onInteraction = () => {
@@ -45,7 +46,7 @@ export function Hero() {
       document.removeEventListener("touchstart", onInteraction);
       document.removeEventListener("click",      onInteraction);
     };
-  }, []);
+  }, [prefersReducedMotion]);
 
   const handleThumbError = () => {
     if (thumbSrc === THUMB_MAXRES) setThumbSrc(THUMB_SD);
@@ -70,11 +71,11 @@ export function Hero() {
       />
 
       {/* ── 2. YouTube thumbnail — mobile only ── */}
-      {isMobile && !videoFailed && (
+      {(isMobile || prefersReducedMotion) && !videoFailed && (
         <div
           style={{
             position: "absolute", inset: 0, zIndex: 1,
-            opacity: videoReady ? 0 : 1,
+            opacity: prefersReducedMotion ? 1 : videoReady ? 0 : 1,
             transition: "opacity 0.8s ease",
             pointerEvents: "none",
           }}
@@ -94,7 +95,7 @@ export function Hero() {
       )}
 
       {/* ── 3. Video ── */}
-      {!videoFailed && (
+      {!videoFailed && !prefersReducedMotion && (
         <div
           style={{
             position: "absolute", inset: 0, zIndex: 2,
@@ -204,7 +205,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 1.1 }}
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={() => document.getElementById("interviews")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => document.getElementById("interviews")?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" })}
             className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full hover:bg-[#ef4444] hover:text-white transition-all duration-300 font-bold tracking-wide"
           >
             <Play className="w-5 h-5" /> WATCH OUR WORK

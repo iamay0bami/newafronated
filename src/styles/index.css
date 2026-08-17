@@ -16,6 +16,97 @@ body {
   max-width: 100vw;
 }
 
+html {
+  font-size: var(--font-size);
+  background: var(--background);
+  color: var(--foreground);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}
+
+.type-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.type-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.type-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.type-kicker,
+.type-meta {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.type-kicker {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: var(--page-top) var(--page-gutter) 5rem;
+}
+
+.section-shell {
+  padding: var(--section-space) var(--page-gutter);
+}
+
+.content-readable {
+  max-width: var(--content-width);
+}
+
+.system-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.system-button {
+  min-height: var(--button-height);
+  padding-inline: 1.5rem;
+  border-radius: var(--radius-card);
+}
+
 /* 3D Flip Card Styles */
 .perspective-1000 {
   perspective: 1000px;
@@ -37,12 +128,13 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 5px;
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: var(--radius-card);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -52,7 +144,7 @@ html {
 /* Selection */
 ::selection {
   background-color: #ef4444;
-  color: #ffffff;
+  color: #000000;
 }
 
 /* Ensure images don't flicker during flip */
@@ -107,4 +199,19 @@ select option {
 .error-boundary-button:focus-visible {
   outline: 3px solid var(--foreground);
   outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

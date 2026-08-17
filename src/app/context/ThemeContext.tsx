@@ -21,6 +21,8 @@ const ThemeContext = createContext<ThemeTokens>({} as ThemeTokens);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
+    const prePaintedTheme = document.documentElement.dataset.theme;
+    if (prePaintedTheme === "light" || prePaintedTheme === "dark") return prePaintedTheme;
     try {
       const s = localStorage.getItem("afronated-theme");
       return s === "light" ? "light" : "dark";
@@ -30,6 +32,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("data-theme", theme);
+    root.classList.toggle("dark", theme === "dark");
+    root.style.colorScheme = theme;
     try { localStorage.setItem("afronated-theme", theme); } catch {}
   }, [theme]);
 
@@ -39,13 +43,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const tokens: ThemeTokens = {
     isDark, theme, toggleTheme,
     bg:         isDark ? "bg-black"             : "bg-white",
-    bgCard:     isDark ? "bg-[#111]"            : "bg-[#f5f5f5]",
+    bgCard:     isDark ? "bg-[#111]"            : "bg-white",
     bgNav:      isDark ? "bg-black/60 border-white/10" : "bg-white/80 border-black/10",
     border:     isDark ? "border-white/10"      : "border-black/10",
     text:       isDark ? "text-white"           : "text-black",
-    textMuted:  isDark ? "text-white/70"        : "text-black/65",
-    textFaint:  isDark ? "text-white/40"        : "text-black/35",
-    iconColor:  isDark ? "text-white/60"        : "text-black/50",
+    textMuted:  isDark ? "text-white/75"        : "text-black/70",
+    textFaint:  isDark ? "text-white/60"        : "text-black/60",
+    iconColor:  isDark ? "text-white/70"        : "text-black/65",
   };
 
   return (

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Youtube, Instagram, Menu, X } from "lucide-react";
 import { FaTiktok, FaMedium } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -38,6 +38,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const T = useT();
+  const prefersReducedMotion = useReducedMotion();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const firstMobileItemRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
   const returnFocusRef = useRef(false);
@@ -58,10 +59,10 @@ export function Navbar() {
     // Use requestAnimationFrame to ensure the DOM has painted before scrolling
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
       });
     });
-  }, [location.pathname]);
+  }, [location.pathname, prefersReducedMotion]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -96,7 +97,7 @@ export function Navbar() {
   const goToSection = (id: string) => {
     setIsMobileMenuOpen(false);
     if (isHome) {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
     } else {
       pendingScrollRef.current = id;
       navigate("/");
@@ -170,7 +171,7 @@ export function Navbar() {
             to="/"
             onClick={() => {
               closeMobile();
-              if (isHome) window.scrollTo({ top: 0, behavior: "smooth" });
+              if (isHome) window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
             }}
             className="flex-shrink-0 min-w-11 min-h-11 flex items-center transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444]"
             aria-label="Go to home"

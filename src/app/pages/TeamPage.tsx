@@ -358,7 +358,7 @@ export function TeamPage() {
     <div className={`min-h-screen transition-colors duration-300 ${T.bg} ${T.text}`}>
 
       {/* Page hero */}
-      <section className="relative pt-40 pb-20 md:pt-52 md:pb-28 px-4 md:px-8 overflow-hidden">
+      <section className="page-shell relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -385,8 +385,7 @@ export function TeamPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.92] mb-10"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className="type-page-title mb-10"
           >
             THE PEOPLE<br />
             <span className="text-[#ef4444]">BEHIND THE</span><br />
@@ -448,7 +447,7 @@ export function TeamPage() {
       {/* Join CTA */}
       <section
         className={`py-24 px-4 md:px-8 border-t ${
-          T.isDark ? "border-white/8 bg-[#0a0a0a]" : "border-black/8 bg-[#f7f5f3]"
+          T.isDark ? "border-white/8 bg-[#0a0a0a]" : "border-black/8 bg-black/[0.03]"
         }`}
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">

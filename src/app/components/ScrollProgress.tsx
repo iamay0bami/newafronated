@@ -1,12 +1,14 @@
-import { motion, useScroll, useSpring } from "motion/react";
+import { motion, useReducedMotion, useScroll, useSpring } from "motion/react";
 
 export function ScrollProgress() {
   const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
+  const prefersReducedMotion = useReducedMotion();
+  const springScaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001
   });
+  const scaleX = prefersReducedMotion ? scrollYProgress : springScaleX;
 
   return (
     <motion.div

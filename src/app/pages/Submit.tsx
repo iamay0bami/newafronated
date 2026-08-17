@@ -101,7 +101,7 @@ function IntentCards() {
     <div className="mt-10 mb-2">
       <div className="flex items-center gap-3 mb-5">
         <div className="w-5 h-px bg-[#ef4444]" />
-        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase ${T.textFaint}`}>
+        <span className={`type-kicker ${T.textFaint}`}>
           How it works
         </span>
       </div>
@@ -126,7 +126,7 @@ function IntentCards() {
               <div className="absolute top-0 left-0 w-[3px] h-full bg-[#ef4444]" />
             )}
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[9px] font-bold tracking-widest uppercase mb-3 ${
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs font-bold tracking-widest uppercase mb-3 ${
                 T.isDark ? item.badgeColor : item.badgeColorLight
               }`}
             >
@@ -224,7 +224,7 @@ export function Submit() {
 
   return (
     <section
-      className={`min-h-screen pt-32 pb-20 px-4 md:px-8 transition-colors duration-300 ${T.bg} ${T.text}`}
+      className={`page-shell transition-colors duration-300 ${T.bg} ${T.text}`}
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
@@ -238,8 +238,7 @@ export function Submit() {
             GET INVOLVED
           </span>
           <h1
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className="type-page-title mb-6"
           >
             PUT ME ON
           </h1>
@@ -422,7 +421,7 @@ export function Submit() {
                   disabled={status === "sending"}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-12 py-4 bg-[#ef4444] text-white hover:bg-white hover:text-black transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="system-button w-full sm:w-auto px-12 bg-[#ef4444] text-black hover:bg-white transition-all duration-300 font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   {status === "sending" ? "Sending..." : "Submit"}
                 </motion.button>

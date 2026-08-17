@@ -1,6 +1,6 @@
 import { RouterProvider } from "react-router";
+import { MotionConfig } from "motion/react";
 import { router } from "./routes";
-import { Preloader } from "./components/Preloader";
 import { ScrollProgress } from "./components/ScrollProgress";
 import { ThemeProvider, useT } from "./context/ThemeContext";
 
@@ -16,9 +16,10 @@ function ThemedRoot() {
 export default function App() {
   return (
     <ThemeProvider>
-      <Preloader />
-      <ScrollProgress />
-      <ThemedRoot />
+      <MotionConfig reducedMotion="user">
+        <ScrollProgress />
+        <ThemedRoot />
+      </MotionConfig>
     </ThemeProvider>
   );
 }

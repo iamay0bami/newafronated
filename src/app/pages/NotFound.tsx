@@ -52,8 +52,7 @@ export function NotFound() {
           <div className="w-8 h-[3px] bg-[#ef4444] mx-auto mb-5" />
 
           <h1
-            className={`text-2xl sm:text-3xl font-black tracking-tighter mb-3 ${T.text}`}
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className={`type-card-title mb-3 ${T.text}`}
           >
             PAGE NOT FOUND
           </h1>
@@ -69,7 +68,7 @@ export function NotFound() {
           <div className="flex flex-col items-center gap-3 w-full max-w-[260px] mx-auto">
             <Link
               to="/"
-              className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-[#ef4444] text-white font-bold tracking-wide hover:bg-white hover:text-black transition-all duration-300 text-sm"
+              className="system-button w-full inline-flex items-center justify-center gap-3 bg-[#ef4444] text-black font-bold tracking-wide hover:bg-white transition-all duration-300 text-sm"
             >
               <Home className="w-4 h-4 flex-shrink-0" />
               BACK TO HOME
@@ -77,7 +76,7 @@ export function NotFound() {
 
             <Link
               to="/submit"
-              className={`w-full inline-flex items-center justify-center gap-3 px-6 py-4 border font-bold tracking-wide transition-all duration-300 hover:border-[#ef4444] hover:text-[#ef4444] text-sm ${
+              className={`system-button w-full inline-flex items-center justify-center gap-3 border font-bold tracking-wide transition-all duration-300 hover:border-[#ef4444] hover:text-[#ef4444] text-sm ${
                 T.isDark
                   ? "border-white/20 text-white/70"
                   : "border-black/20 text-black/60"

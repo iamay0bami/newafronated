@@ -80,7 +80,7 @@ export function About() {
       {/* ══════════════════════════════════════════════════════════════════
           HERO — full-bleed statement
       ══════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-40 pb-24 md:pt-52 md:pb-32 px-4 md:px-8 overflow-hidden">
+      <section className="page-shell relative overflow-hidden">
         {/* Subtle grid */}
         <div className="absolute inset-0 opacity-[0.04]" style={{
           backgroundImage: T.isDark
@@ -105,8 +105,7 @@ export function About() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.92] mb-12"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
+            className="type-page-title mb-12"
           >
             We document<br />
             what Africa<br />
@@ -135,7 +134,7 @@ export function About() {
       {/* ══════════════════════════════════════════════════════════════════
           ORIGIN STORY
       ══════════════════════════════════════════════════════════════════ */}
-      <section className={`py-24 md:py-32 px-4 md:px-8 ${T.isDark ? "bg-[#0a0a0a]" : "bg-[#f7f5f3]"}`}>
+      <section className={`section-shell ${T.isDark ? "bg-[#0a0a0a]" : "bg-black/[0.03]"}`}>
         <div className="max-w-7xl mx-auto">
           <SectionLabel text="The Origin" />
 
@@ -234,7 +233,7 @@ export function About() {
       {/* ══════════════════════════════════════════════════════════════════
           MISSION — the full statement
       ══════════════════════════════════════════════════════════════════ */}
-      <section className={`py-24 md:py-32 px-4 md:px-8 ${T.isDark ? "bg-[#0a0a0a]" : "bg-[#f7f5f3]"}`}>
+      <section className={`section-shell ${T.isDark ? "bg-[#0a0a0a]" : "bg-black/[0.03]"}`}>
         <div className="max-w-7xl mx-auto">
           <SectionLabel text="Our Mission" />
 
@@ -322,7 +321,7 @@ export function About() {
       {/* ══════════════════════════════════════════════════════════════════
           CTA — meet the team + get involved
       ══════════════════════════════════════════════════════════════════ */}
-      <section className={`py-24 md:py-32 px-4 md:px-8 ${T.isDark ? "bg-[#0a0a0a]" : "bg-[#f7f5f3]"}`}>
+      <section className={`section-shell ${T.isDark ? "bg-[#0a0a0a]" : "bg-black/[0.03]"}`}>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 

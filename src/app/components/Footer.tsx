@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Youtube, Instagram } from "lucide-react";
 import { FaTiktok, FaMedium } from "react-icons/fa";
 import { Link, useNavigate } from "react-router";
@@ -17,15 +17,16 @@ function XIcon({ className = "w-5 h-5" }: { className?: string }) {
 export function Footer() {
   const T = useT();
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
 
   const goTo = (id: string) => {
     const onHome = window.location.pathname === "/";
     if (onHome) {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
     } else {
       navigate("/");
       setTimeout(
-        () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }),
+        () => document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" }),
         120
       );
     }
@@ -49,7 +50,7 @@ export function Footer() {
     { href: "https://x.com/AfroNated",              icon: <XIcon className="w-5 h-5" />,       label: "X"         },
   ];
 
-  const footerBg  = T.isDark ? "bg-[#0d0d0d]"  : "bg-[#f0eeec]";
+  const footerBg  = T.isDark ? "bg-[#0d0d0d]"  : "bg-white";
   const topBorder = T.isDark ? "border-t border-white/[0.07]" : "border-t border-black/[0.08]";
 
   return (
