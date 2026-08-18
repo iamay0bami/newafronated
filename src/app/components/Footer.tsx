@@ -1,7 +1,8 @@
 import { motion, useReducedMotion } from "motion/react";
 import { Youtube, Instagram } from "lucide-react";
 import { FaTiktok, FaMedium } from "react-icons/fa";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useEffect, useRef } from "react";
 import { AfronatedLogo } from "./AfronatedLogo";
 import { useT } from "../context/ThemeContext";
 import { NewsletterSignup } from "./NewsletterSignup";
@@ -16,19 +17,29 @@ function XIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 export function Footer() {
   const T = useT();
+  const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
+  const pendingScrollRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;
+    const id = pendingScrollRef.current;
+    pendingScrollRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+      });
+    });
+  }, [location.pathname, prefersReducedMotion]);
 
   const goTo = (id: string) => {
     const onHome = window.location.pathname === "/";
     if (onHome) {
       document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
     } else {
+      pendingScrollRef.current = id;
       navigate("/");
-      setTimeout(
-        () => document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" }),
-        120
-      );
     }
   };
 
@@ -57,20 +68,6 @@ export function Footer() {
     <footer
       className={`relative py-20 md:py-32 px-4 md:px-8 overflow-hidden transition-colors duration-300 ${footerBg} ${topBorder}`}
     >
-      {/* Ghosted background wordmark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <motion.h2
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 0.03, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.5 }}
-          className={`text-[12vw] md:text-[15vw] lg:text-[18vw] font-black tracking-tighter whitespace-nowrap ${T.text}`}
-          style={{ fontFamily: "Montserrat, sans-serif" }}
-        >
-          AFRO-NATED
-        </motion.h2>
-      </div>
-
       <div className="relative z-10 max-w-7xl mx-auto">
         {/*
           Four-column grid:
@@ -113,14 +110,15 @@ export function Footer() {
                   {href ? (
                     <Link
                       to={href}
-                      className={`text-sm transition-colors hover:text-[#ef4444] ${T.textMuted}`}
+                      aria-current={location.pathname === href ? "page" : undefined}
+                      className={`text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${location.pathname === href ? "text-[#ef4444]" : T.textMuted} hover:text-[#ef4444]`}
                     >
                       {label}
                     </Link>
                   ) : (
                     <button
                       onClick={action}
-                      className={`text-sm transition-colors hover:text-[#ef4444] ${T.textMuted}`}
+                      className={`text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] hover:text-[#ef4444] ${T.textMuted}`}
                     >
                       {label}
                     </button>
@@ -146,7 +144,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className={`w-11 h-11 rounded-full border flex items-center justify-center hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white transition-all duration-300 ${
+                  className={`w-11 h-11 rounded-md border flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white transition-colors duration-300 ${
                     T.isDark
                       ? "bg-white/5 border-white/10 text-white/60"
                       : "bg-black/5 border-black/10 text-black/50"
@@ -178,24 +176,23 @@ export function Footer() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className={`flex flex-col md:flex-row justify-between items-center gap-4 text-sm ${T.textFaint}`}
+          className={`flex flex-col md:flex-row justify-between items-center gap-4 text-sm ${T.textMuted}`}
         >
           <p>© 2026 Afro-Nated. All rights reserved.</p>
           <div className="flex items-center gap-6 flex-wrap justify-center">
-            <Link to="/careers" className="hover:text-[#ef4444] transition-colors">
+            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} className={`hover:text-[#ef4444] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${location.pathname === "/careers" ? "text-[#ef4444]" : ""}`}>
               Careers
             </Link>
-            <Link to="/privacy" className="hover:text-[#ef4444] transition-colors">
+            <Link to="/privacy" aria-current={location.pathname === "/privacy" ? "page" : undefined} className={`hover:text-[#ef4444] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${location.pathname === "/privacy" ? "text-[#ef4444]" : ""}`}>
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-[#ef4444] transition-colors">
+            <Link to="/terms" aria-current={location.pathname === "/terms" ? "page" : undefined} className={`hover:text-[#ef4444] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${location.pathname === "/terms" ? "text-[#ef4444]" : ""}`}>
               Terms of Service
             </Link>
           </div>
         </motion.div>
       </div>
 
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#ef4444]/30 to-transparent" />
     </footer>
   );
 }

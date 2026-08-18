@@ -127,8 +127,13 @@ export function Navbar() {
     { href: "https://www.tiktok.com/@afronated",    icon: <FaTiktok className="w-4 h-4" />,  label: "TikTok"    },
   ];
 
-  const linkCls = `text-sm font-medium transition-colors tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
-  const mobileLinkCls = `w-full text-left px-4 py-3 rounded-lg transition-all font-medium tracking-wide ${T.textMuted} hover:text-[#ef4444]`;
+  const linkCls = `text-sm font-medium tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] focus-visible:ring-offset-2 ${T.isDark ? "focus-visible:ring-offset-black" : "focus-visible:ring-offset-white"} ${T.textMuted} hover:text-[#ef4444]`;
+  const mobileLinkCls = `w-full text-left px-4 py-3 rounded-md font-medium tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] ${T.textMuted} hover:text-[#ef4444]`;
+
+  const getRouteLinkClass = (href: string, cls: string) =>
+    location.pathname === href
+      ? `${cls} text-[#ef4444]`
+      : cls;
 
   const renderNavItem = (
     item: { label: string; href?: string; action?: () => void },
@@ -141,7 +146,7 @@ export function Navbar() {
           key={item.label}
           to={item.href}
           onClick={closeMobile}
-          className={cls}
+          className={getRouteLinkClass(item.href, cls)}
           aria-current={location.pathname === item.href ? "page" : undefined}
         >
           {item.label}{extra}
@@ -182,9 +187,9 @@ export function Navbar() {
           {/* Desktop nav links */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((item) => renderNavItem(item, linkCls))}
-            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={linkCls}>SUBMIT</Link>
-            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={linkCls}>PARTNER</Link>
-            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`${linkCls} relative`}>
+            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={getRouteLinkClass("/submit", linkCls)}>SUBMIT</Link>
+            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={getRouteLinkClass("/partner", linkCls)}>PARTNER</Link>
+            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`${getRouteLinkClass("/careers", linkCls)} relative`}>
               CAREERS
               <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
             </Link>
@@ -241,19 +246,19 @@ export function Navbar() {
         className="fixed top-24 left-0 right-0 z-40 lg:hidden px-4"
       >
         <div
-          className={`backdrop-blur-xl border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${
+          className={`backdrop-blur-xl border rounded-md shadow-2xl overflow-hidden transition-colors duration-300 ${
             T.isDark ? "bg-black/95" : "bg-white/98"
           } ${T.border}`}
         >
           <div className="p-6 space-y-2">
             {navLinks.map((item) =>
               item.href
-                ? <Link ref={item === navLinks[0] ? firstMobileItemRef as React.Ref<HTMLAnchorElement> : undefined} key={item.label} to={item.href} aria-current={location.pathname === item.href ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>{item.label}</Link>
+                ? <Link ref={item === navLinks[0] ? firstMobileItemRef as React.Ref<HTMLAnchorElement> : undefined} key={item.label} to={item.href} aria-current={location.pathname === item.href ? "page" : undefined} onClick={closeMobile} className={`block ${getRouteLinkClass(item.href, mobileLinkCls)}`}>{item.label}</Link>
                 : <button ref={item === navLinks[0] ? firstMobileItemRef as React.Ref<HTMLButtonElement> : undefined} key={item.label} onClick={() => { item.action?.(); closeMobile(); }} className={`block ${mobileLinkCls}`}>{item.label}</button>
             )}
-            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>SUBMIT</Link>
-            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls}`}>PARTNER</Link>
-            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`block ${mobileLinkCls} flex items-center gap-2`}>
+            <Link to="/submit" aria-current={location.pathname === "/submit" ? "page" : undefined} onClick={closeMobile} className={`block ${getRouteLinkClass("/submit", mobileLinkCls)}`}>SUBMIT</Link>
+            <Link to="/partner" aria-current={location.pathname === "/partner" ? "page" : undefined} onClick={closeMobile} className={`block ${getRouteLinkClass("/partner", mobileLinkCls)}`}>PARTNER</Link>
+            <Link to="/careers" aria-current={location.pathname === "/careers" ? "page" : undefined} onClick={closeMobile} className={`block ${getRouteLinkClass("/careers", mobileLinkCls)} flex items-center gap-2`}>
               CAREERS
               <span className="inline-flex items-center px-2 py-0.5 bg-[#ef4444]/20 border border-[#ef4444]/40 rounded-full text-[#ef4444] text-[9px] font-bold tracking-widest uppercase">
                 Hiring
@@ -272,7 +277,7 @@ export function Navbar() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all hover:text-[#ef4444] hover:border-[#ef4444] ${
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] hover:text-[#ef4444] hover:border-[#ef4444] ${
                     T.isDark
                       ? "bg-white/5 border-white/10 text-white/60"
                       : "bg-black/5 border-black/10 text-black/50"

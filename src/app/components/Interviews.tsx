@@ -217,11 +217,7 @@ export function Interviews({
   return (
     <section
       id="interviews"
-      className={`relative py-24 md:py-32 px-4 md:px-8 transition-colors duration-300 ${
-        T.isDark
-          ? "bg-gradient-to-b from-black to-[#1a1a1a]/30"
-          : "bg-gradient-to-b from-white to-[#f0f0f0]"
-      }`}
+      className={`relative py-24 md:py-32 px-4 md:px-8 transition-colors duration-300 ${T.bg}`}
     >
       <div className="max-w-7xl mx-auto">
         {/* Section header */}
@@ -280,7 +276,7 @@ export function Interviews({
             href="https://www.youtube.com/@Afronated"
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-3 px-8 py-4 border rounded-full font-bold tracking-wide group hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-white transition-all duration-300 ${
+            className={`inline-flex items-center gap-3 px-8 py-4 border rounded-md font-bold tracking-wide group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ef4444] hover:bg-[#ef4444] hover:border-[#ef4444] hover:text-black transition-colors duration-300 ${
               T.isDark
                 ? "bg-white/5 border-white/10 text-white"
                 : "bg-black/5 border-black/10 text-black"

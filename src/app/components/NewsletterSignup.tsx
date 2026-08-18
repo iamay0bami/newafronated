@@ -157,7 +157,7 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
       viewport={{ once: true }}
       transition={{ duration: 0.7 }}
       className={`
-        relative mt-20 rounded-2xl overflow-hidden
+        relative mt-20 rounded-md overflow-hidden
         border p-8 md:p-12
         ${T.isDark
           ? "bg-[#0a0a0a] border-white/8"
@@ -165,17 +165,6 @@ export function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) 
         }
       `}
     >
-      {/* Red accent glow */}
-      <div
-        className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, #ef4444 0%, transparent 70%)",
-          filter: "blur(60px)",
-          opacity: T.isDark ? 0.08 : 0.05,
-          transform: "translate(30%, -30%)",
-        }}
-      />
-
       <div className="relative z-10 max-w-xl">
         {/* Label */}
         <div className="flex items-center gap-3 mb-5">

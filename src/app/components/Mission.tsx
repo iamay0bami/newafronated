@@ -14,19 +14,6 @@ export function Mission() {
       id="mission"
       className={`relative py-24 md:py-32 lg:py-40 overflow-hidden transition-colors duration-300 ${T.bg}`}
     >
-      {/* Background grid */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: T.isDark
-              ? `linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)`
-              : `linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px)`,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
       {/* Punchline block */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
         <motion.div
@@ -91,14 +78,6 @@ export function Mission() {
         {/* Instagram mosaic */}
         <InstagramMosaic />
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileInView={{ opacity: 0.05, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5 }}
-        className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-[#ef4444] blur-3xl"
-      />
     </section>
   );
 }
